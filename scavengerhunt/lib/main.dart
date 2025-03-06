@@ -49,40 +49,29 @@ class _GameScreenState extends State<GameScreen> {
   // List of quiz questions and correct answers
   final List<Question> questions = [
     Question(
-      questionText: 'Question 1: Between Zones 1100, 1200, and 1300, in which is the Panera Bread located?',
+      questionText:
+          'Question 1: Between Zones 1100, 1200, and 1300, in which is the Panera Bread located?',
       correctAnswer: '1300',
     ),
     Question(
-      questionText: 'Past this location up ahead, there should be a Bronze statue between two classrooms. What are the first three words on the plaque of the statue?',
+      questionText:
+          'Question 2: Past this location up ahead, there should be a Bronze statue between two classrooms. What are the first three words on the plaque of the statue?',
       correctAnswer: 'Tau Beta Gamma',
     ),
     Question(
-      questionText: 'By now you should have found a set of wide stairs. Going up, how many steps is it?',
-      correctAnswer: 'answer',
+      questionText:
+          'Question 3: By now you should have found a set of wide stairs. Going up, how many steps is it?(wooden step)',
+      correctAnswer: '11',
     ),
     Question(
-      questionText: 'Now you are on the second floor. To your left are engineering labs, and to your right computer labs. What zone are the computer labs located in?',
+      questionText:
+          'Question 4: Now you are on the second floor. To your left are engineering labs, and to your right computer labs. What zone are the computer labs located in?',
       correctAnswer: '2300',
     ),
     Question(
-      questionText: 'question?',
-      correctAnswer: 'answer',
-    ),
-    Question(
-      questionText: 'question?',
-      correctAnswer: 'answer',
-    ),
-    Question(
-      questionText: 'question?',
-      correctAnswer: 'answer',
-    ),
-    Question(
-      questionText: 'question?',
-      correctAnswer: 'answer',
-    ),
-    Question(
-      questionText: 'question?',
-      correctAnswer: 'answer',
+      questionText:
+          'Question 5: As soon as you turn left you should see a room with part of a car in it. What branch of engineering does this driving simulator lab belong to?',
+      correctAnswer: 'Civil engineering',
     ),
     Question(
       questionText: 'question?',
@@ -92,27 +81,40 @@ class _GameScreenState extends State<GameScreen> {
 
   int currentQuestionIndex = 0;
   int score = 0;
+  int totalGuesses =
+      6; // Total number of guesses allowed across the entire quiz
   TextEditingController answerController = TextEditingController();
+  String feedbackMessage = ''; // To show feedback message for wrong answers
 
   // Function to handle the answer submission
   void submitAnswer() {
-    if (answerController.text.trim().toLowerCase() ==
-        questions[currentQuestionIndex].correctAnswer.toLowerCase()) {
-      setState(() {
-        score++;
-      });
+    if (totalGuesses > 0) {
+      if (answerController.text.trim().toLowerCase() ==
+          questions[currentQuestionIndex].correctAnswer.toLowerCase()) {
+        setState(() {
+          score++;
+          feedbackMessage = 'Correct!'; // Feedback for correct answer
+        });
+        // Move to the next question only for correct answers
+        setState(() {
+          currentQuestionIndex++;
+        });
+      } else {
+        setState(() {
+          totalGuesses--;
+          feedbackMessage =
+              'Incorrect! Please try again.'; // Feedback for incorrect answer
+        });
+      }
     }
 
-    // Move to the next question or end the quiz
-    if (currentQuestionIndex < questions.length - 1) {
-      setState(() {
-        currentQuestionIndex++;
-      });
-      answerController.clear();
-    } else {
-      // End the game
+    // End the game when out of guesses or questions
+    if (totalGuesses == 0 || currentQuestionIndex == questions.length) {
       _showResultDialog();
     }
+
+    // Clear the input field after submitting the answer
+    answerController.clear();
   }
 
   // Function to show the result dialog
@@ -122,7 +124,8 @@ class _GameScreenState extends State<GameScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Quiz Over'),
-          content: Text('Your score is $score/${questions.length}'),
+          content: Text(
+              'Your score is $score/${questions.length}. You have $totalGuesses guesses left.'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
@@ -130,6 +133,7 @@ class _GameScreenState extends State<GameScreen> {
                 setState(() {
                   currentQuestionIndex = 0;
                   score = 0;
+                  totalGuesses = 6; // Reset guesses when restarting
                 });
                 answerController.clear();
               },
@@ -189,10 +193,21 @@ class _GameScreenState extends State<GameScreen> {
               ),
             ),
             SizedBox(height: 20),
-            // Display the current score
+            // Display the feedback message (for incorrect answers)
             Text(
-              'Score: $score/${currentQuestionIndex + 1}',
+              feedbackMessage,
+              style: TextStyle(
+                  fontSize: 18,
+                  color: feedbackMessage == 'Correct!'
+                      ? Colors.green
+                      : Colors.red),
+            ),
+            SizedBox(height: 20),
+            // Display the current score and guesses left
+            Text(
+              'Score: $score/${currentQuestionIndex + 1}\nGuesses left: $totalGuesses',
               style: TextStyle(fontSize: 18),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
