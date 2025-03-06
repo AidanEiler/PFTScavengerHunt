@@ -49,20 +49,20 @@ class _GameScreenState extends State<GameScreen> {
   // List of quiz questions and correct answers
   final List<Question> questions = [
     Question(
-      questionText: 'question?',
+      questionText: 'Question 1: Between Zones 1100, 1200, and 1300, in which is the Panera Bread located?',
+      correctAnswer: '1300',
+    ),
+    Question(
+      questionText: 'Past this location up ahead, there should be a Bronze statue between two classrooms. What are the first three words on the plaque of the statue?',
+      correctAnswer: 'Tau Beta Gamma',
+    ),
+    Question(
+      questionText: 'By now you should have found a set of wide stairs. Going up, how many steps is it?',
       correctAnswer: 'answer',
     ),
     Question(
-      questionText: 'question?',
-      correctAnswer: 'answer',
-    ),
-    Question(
-      questionText: 'question?',
-      correctAnswer: 'answer',
-    ),
-    Question(
-      questionText: 'question?',
-      correctAnswer: 'answer',
+      questionText: 'Now you are on the second floor. To your left are engineering labs, and to your right computer labs. What zone are the computer labs located in?',
+      correctAnswer: '2300',
     ),
     Question(
       questionText: 'question?',
