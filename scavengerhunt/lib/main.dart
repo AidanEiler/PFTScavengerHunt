@@ -77,6 +77,22 @@ class _GameScreenState extends State<GameScreen> {
       questionText: 'question?',
       correctAnswer: 'answer',
     ),
+    Question(
+      questionText: 'question?',
+      correctAnswer: 'answer',
+    ),
+    Question(
+      questionText: 'question?',
+      correctAnswer: 'answer',
+    ),
+    Question(
+      questionText: 'question?',
+      correctAnswer: 'answer',
+    ),
+    Question(
+      questionText: 'question?',
+      correctAnswer: 'answer',
+    ),
   ];
 
   int currentQuestionIndex = 0;
@@ -89,27 +105,48 @@ class _GameScreenState extends State<GameScreen> {
   // Function to handle the answer submission
   void submitAnswer() {
     if (totalGuesses > 0) {
-      if (answerController.text.trim().toLowerCase() ==
-          questions[currentQuestionIndex].correctAnswer.toLowerCase()) {
-        setState(() {
-          score++;
-          feedbackMessage = 'Correct!'; // Feedback for correct answer
-        });
-        // Move to the next question only for correct answers
-        setState(() {
-          currentQuestionIndex++;
-        });
+      // For the fifth question, allow both "Civil" and "Civil engineering" as valid answers
+      if (currentQuestionIndex == 4) {
+        // Fifth question (index 4)
+        if (answerController.text.trim().toLowerCase() == 'civil' ||
+            answerController.text.trim().toLowerCase() == 'civil engineering') {
+          setState(() {
+            score++;
+            feedbackMessage = 'Correct!'; // Feedback for correct answer
+          });
+        } else {
+          setState(() {
+            totalGuesses--;
+            feedbackMessage =
+                'Incorrect! Please try again.'; // Feedback for incorrect answer
+          });
+        }
       } else {
+        if (answerController.text.trim().toLowerCase() ==
+            questions[currentQuestionIndex].correctAnswer.toLowerCase()) {
+          setState(() {
+            score++;
+            feedbackMessage = 'Correct!'; // Feedback for correct answer
+          });
+        } else {
+          setState(() {
+            totalGuesses--;
+            feedbackMessage =
+                'Incorrect! Please try again.'; // Feedback for incorrect answer
+          });
+        }
+      }
+
+      // If we are not at the last question and have guesses left, go to the next question
+      if (totalGuesses > 0 && currentQuestionIndex < questions.length - 1) {
         setState(() {
-          totalGuesses--;
-          feedbackMessage =
-              'Incorrect! Please try again.'; // Feedback for incorrect answer
+          currentQuestionIndex++; // Move to the next question
         });
       }
     }
 
-    // End the game when out of guesses or questions
-    if (totalGuesses == 0 || currentQuestionIndex == questions.length) {
+    // If the user answers all the questions correctly or runs out of guesses, show the result
+    if (score == questions.length || totalGuesses == 0) {
       _showResultDialog();
     }
 
