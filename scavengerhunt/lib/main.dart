@@ -74,16 +74,16 @@ class _GameScreenState extends State<GameScreen> {
       correctAnswer: 'Civil engineering',
     ),
     Question(
-      questionText: 'question?',
+      questionText: 'Question 6: Now that you have familiarized yourself with the first and second floor, it's time to proceed to the third. Whose office is 3209G?',
+      correctAnswer: 'Mahmood Jasim',
+    ),
+    Question(
+      questionText: 'Question 7: What room number is the office of Nash Mahmood?',
       correctAnswer: 'answer',
     ),
     Question(
-      questionText: 'question?',
-      correctAnswer: 'answer',
-    ),
-    Question(
-      questionText: 'question?',
-      correctAnswer: 'answer',
+      questionText: 'You're almost done In the central lobby of the third floor, how many screens are set up there?',
+      correctAnswer: 'One',
     ),
     Question(
       questionText: 'question?',
