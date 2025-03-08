@@ -95,7 +95,8 @@ class _GameScreenState extends State<GameScreen> {
       correctAnswer: 'Civil engineering',
     ),
     Question(
-      questionText: 'Question 6: Now that you have familiarized yourself with the first and second floor, it\'s time to proceed to the third. Whose office is 3209G?',
+      questionText:
+          'Question 6: Now that you have familiarized yourself with the first and second floor, it\'s time to proceed to the third. Whose office is 3209G?',
       correctAnswer: 'Mahmood Jasim',
     ),
     Question(
@@ -110,6 +111,7 @@ class _GameScreenState extends State<GameScreen> {
 
   int currentQuestionIndex = 0;
   TextEditingController answerController = TextEditingController();
+  TextEditingController wordGuessController = TextEditingController();
   String feedbackMessage = '';
   
   // Track answered questions
@@ -256,14 +258,48 @@ class _GameScreenState extends State<GameScreen> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                Navigator.of(context).pop(); // Go back to home screen
+                resetGame(); // Reset game for replay
               },
-              child: Text('Finish'),
+              child: Text('Play Again'),
             ),
           ],
         );
       },
     );
+  }
+
+  // Function to reset the game
+  void resetGame() {
+    setState(() {
+      // Reset game state
+      currentQuestionIndex = 0;
+      questionAnswered = List.generate(questions.length, (index) => false);
+      revealedLetters = List.generate(secretWord.length, (index) => false);
+      feedbackMessage = '';
+      wordGuessController.clear();
+    });
+  }
+
+  // Function to submit the word guess
+  void submitWordGuess() {
+    String userWordGuess = wordGuessController.text.trim().toLowerCase();
+
+    // Check if the word guess is correct
+    if (userWordGuess == secretWord.toLowerCase()) {
+      setState(() {
+        feedbackMessage = 'Correct! You guessed the word!';
+      });
+
+      // Show completion dialog after word is guessed correctly
+      _showCompletionDialog();
+    } else {
+      setState(() {
+        feedbackMessage = 'Incorrect! Try again.';
+      });
+    }
+
+    // Clear the input field after submitting the word
+    wordGuessController.clear();
   }
 
   @override
@@ -414,6 +450,26 @@ class _GameScreenState extends State<GameScreen> {
                 ],
               ),
             ),
+            SizedBox(height: 20),
+
+            // Word Guess section
+            TextField(
+              controller: wordGuessController,
+              decoration: InputDecoration(
+                hintText: 'Guess the secret word',
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+              ),
+              style: TextStyle(fontSize: 18),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: submitWordGuess,
+              child: Text('Submit Word Guess'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: Size(double.infinity, 50),
+              ),
+            ),
           ],
         ),
       ),
@@ -421,7 +477,6 @@ class _GameScreenState extends State<GameScreen> {
   }
 }
 
-// Question class to represent each quiz question
 class Question {
   final String questionText;
   final String correctAnswer;
