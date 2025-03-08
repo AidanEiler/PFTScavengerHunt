@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 void main() => runApp(MyApp());
 
@@ -6,7 +7,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Fill-in-the-Blank Quiz',
+      title: 'PFT Explorer Quiz',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -20,20 +21,40 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Quiz App'),
+        title: Text('PFT Explorer Quiz'),
       ),
       body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => GameScreen()),
-            );
-          },
-          child: Text(
-            'Start Quiz',
-            style: TextStyle(fontSize: 24),
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Explore Patrick F. Taylor Hall',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Answer questions as you explore the building\nand reveal the secret word!',
+              style: TextStyle(fontSize: 18),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 40),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => GameScreen()),
+                );
+              },
+              child: Text(
+                'Start Exploring',
+                style: TextStyle(fontSize: 24),
+              ),
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -79,109 +100,165 @@ class _GameScreenState extends State<GameScreen> {
     ),
     Question(
       questionText: 'Question 7: What room number is the office of Nash Mahmood?',
-      correctAnswer: 'answer',
+      correctAnswer: '3209H',
     ),
     Question(
-      questionText: 'You\'re almost done In the central lobby of the third floor, how many screens are set up there?',
-      correctAnswer: 'One',
-    ),
-    Question(
-      questionText: 'question?',
-      correctAnswer: 'answer',
-    ),
-    Question(
-      questionText: 'question?',
-      correctAnswer: 'answer',
+      questionText: 'Question 8: You\'re almost done! In the central lobby of the third floor, how many screens are set up there?',
+      correctAnswer: '1',
     ),
   ];
 
   int currentQuestionIndex = 0;
-  int score = 0;
-  int totalGuesses =
-      6; // Total number of guesses allowed across the entire quiz
   TextEditingController answerController = TextEditingController();
-  String feedbackMessage = ''; // To show feedback message for wrong answers
+  String feedbackMessage = '';
+  
+  // Track answered questions
+  List<bool> questionAnswered = [];
+  
+  // Secret word to be revealed
+  final String secretWord = "MR DANIEL";
+  List<bool> revealedLetters = [];
+  
+  @override
+  void initState() {
+    super.initState();
+    // Initialize questionAnswered list with all false values
+    questionAnswered = List.generate(questions.length, (index) => false);
+    // Initialize revealedLetters list with all false values
+    revealedLetters = List.generate(secretWord.length, (index) => false);
+  }
 
   // Function to handle the answer submission
   void submitAnswer() {
-    if (totalGuesses > 0) {
-      // For the fifth question, allow both "Civil" and "Civil engineering" as valid answers
-      if (currentQuestionIndex == 4) {
-        // Fifth question (index 4)
-        if (answerController.text.trim().toLowerCase() == 'civil' ||
-            answerController.text.trim().toLowerCase() == 'civil engineering') {
-          setState(() {
-            score++;
-            feedbackMessage = 'Correct!'; // Feedback for correct answer
-          });
-        } else {
-          setState(() {
-            totalGuesses--;
-            feedbackMessage =
-                'Incorrect! Please try again.'; // Feedback for incorrect answer
-          });
+    String userAnswer = answerController.text.trim().toLowerCase();
+    String correctAnswer = questions[currentQuestionIndex].correctAnswer.toLowerCase();
+    
+    // For the fifth question, allow both "Civil" and "Civil engineering" as valid answers
+    if (currentQuestionIndex == 4 && (userAnswer == 'civil' || userAnswer == 'civil engineering')) {
+      setState(() {
+        if (!questionAnswered[currentQuestionIndex]) {
+          questionAnswered[currentQuestionIndex] = true;
+          revealRandomLetter();
         }
-      } else {
-        if (answerController.text.trim().toLowerCase() ==
-            questions[currentQuestionIndex].correctAnswer.toLowerCase()) {
-          setState(() {
-            score++;
-            feedbackMessage = 'Correct!'; // Feedback for correct answer
-          });
-        } else {
-          setState(() {
-            totalGuesses--;
-            feedbackMessage =
-                'Incorrect! Please try again.'; // Feedback for incorrect answer
-          });
-        }
-      }
-
-      // If we are not at the last question and have guesses left, go to the next question
-      if (totalGuesses > 0 && currentQuestionIndex < questions.length - 1) {
-        setState(() {
-          currentQuestionIndex++; // Move to the next question
+        feedbackMessage = 'Correct!';
+      });
+      
+      // Automatically move to the next question if possible
+      if (currentQuestionIndex < questions.length - 1) {
+        // Use Future.delayed to give user a moment to see "Correct!" message
+        Future.delayed(Duration(milliseconds: 800), () {
+          if (mounted) {
+            nextQuestion();
+          }
         });
       }
+    } else if (userAnswer == correctAnswer) {
+      setState(() {
+        if (!questionAnswered[currentQuestionIndex]) {
+          questionAnswered[currentQuestionIndex] = true;
+          revealRandomLetter();
+        }
+        feedbackMessage = 'Correct!';
+      });
+      
+      // Automatically move to the next question if possible
+      if (currentQuestionIndex < questions.length - 1) {
+        // Use Future.delayed to give user a moment to see "Correct!" message
+        Future.delayed(Duration(milliseconds: 800), () {
+          if (mounted) {
+            nextQuestion();
+          }
+        });
+      }
+    } else {
+      setState(() {
+        feedbackMessage = 'Incorrect! Try again.';
+      });
     }
-
-    // If the user answers all the questions correctly or runs out of guesses, show the result
-    if (score == questions.length || totalGuesses == 0) {
-      _showResultDialog();
-    }
-
+    
     // Clear the input field after submitting the answer
     answerController.clear();
+    
+    // Check if all letters have been revealed
+    if (revealedLetters.every((revealed) => revealed)) {
+      _showCompletionDialog();
+    }
+  }
+  
+  // Function to reveal a random letter in the secret word
+  void revealRandomLetter() {
+    // Count unrevealed letters (skip spaces)
+    List<int> unrevealedIndices = [];
+    for (int i = 0; i < revealedLetters.length; i++) {
+      if (!revealedLetters[i] && secretWord[i] != ' ') {
+        unrevealedIndices.add(i);
+      }
+    }
+    
+    // If there are still letters to reveal
+    if (unrevealedIndices.isNotEmpty) {
+      // Select a random unrevealed letter
+      final random = Random();
+      int randomIndex = unrevealedIndices[random.nextInt(unrevealedIndices.length)];
+      
+      // Reveal that letter
+      setState(() {
+        revealedLetters[randomIndex] = true;
+      });
+    }
+  }
+  
+  // Navigate to the next question
+  void nextQuestion() {
+    if (currentQuestionIndex < questions.length - 1) {
+      setState(() {
+        currentQuestionIndex++;
+        feedbackMessage = '';
+        answerController.clear();
+      });
+    }
+  }
+  
+  // Navigate to the previous question
+  void previousQuestion() {
+    if (currentQuestionIndex > 0) {
+      setState(() {
+        currentQuestionIndex--;
+        feedbackMessage = '';
+        answerController.clear();
+      });
+    }
   }
 
-  // Function to show the result dialog
-  void _showResultDialog() {
+  // Function to show the completion dialog
+  void _showCompletionDialog() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Quiz Over'),
-          content: Text(
-              'Your score is $score/${questions.length}. You have $totalGuesses guesses left.'),
+          title: Text('Congratulations!'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'You\'ve revealed the entire secret word: $secretWord!',
+                style: TextStyle(fontSize: 18),
+              ),
+              SizedBox(height: 20),
+              Text(
+                'You\'ve completed the PFT Explorer Quiz.',
+                style: TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
           actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                setState(() {
-                  currentQuestionIndex = 0;
-                  score = 0;
-                  totalGuesses = 6; // Reset guesses when restarting
-                });
-                answerController.clear();
-              },
-              child: Text('Restart'),
-            ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 Navigator.of(context).pop(); // Go back to home screen
               },
-              child: Text('Home'),
+              child: Text('Finish'),
             ),
           ],
         );
@@ -192,59 +269,150 @@ class _GameScreenState extends State<GameScreen> {
   @override
   Widget build(BuildContext context) {
     final currentQuestion = questions[currentQuestionIndex];
+    
+    // Count answered questions
+    int answeredCount = questionAnswered.where((answered) => answered).length;
+    
     return Scaffold(
       appBar: AppBar(
-        title: Text('Quiz Game'),
+        title: Text('PFT Explorer Quiz'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Display the current question
-            Text(
-              currentQuestion.questionText,
-              style: TextStyle(fontSize: 24),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 20),
-            // Text input for the user to enter their answer
-            TextField(
-              controller: answerController,
-              decoration: InputDecoration(
-                hintText: 'Type your answer here',
-                border: OutlineInputBorder(),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+            // Secret word display (hangman-style)
+            Container(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Column(
+                children: [
+                  Text(
+                    'Secret Word',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      secretWord.length,
+                      (index) => Container(
+                        margin: EdgeInsets.symmetric(horizontal: 5),
+                        width: 40,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          border: Border(bottom: BorderSide(width: 2, color: secretWord[index] == ' ' ? Colors.transparent : Colors.black)),
+                        ),
+                        child: Center(
+                          child: secretWord[index] == ' ' 
+                              ? SizedBox(width: 20) // Show empty space
+                              : (revealedLetters[index]
+                                  ? Text(
+                                      secretWord[index],
+                                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                                    )
+                                  : Text('')),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              style: TextStyle(fontSize: 18),
             ),
-            SizedBox(height: 20),
-            // Submit button
-            ElevatedButton(
-              onPressed: submitAnswer,
-              child: Text('Submit Answer'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50),
+            
+            SizedBox(height: 10),
+            
+            // Progress indicator
+            Container(
+              padding: EdgeInsets.symmetric(vertical: 10),
+              child: Text(
+                'Progress: $answeredCount/${questions.length} questions answered',
+                style: TextStyle(fontSize: 16),
               ),
             ),
-            SizedBox(height: 20),
-            // Display the feedback message (for incorrect answers)
-            Text(
-              feedbackMessage,
-              style: TextStyle(
-                  fontSize: 18,
-                  color: feedbackMessage == 'Correct!'
-                      ? Colors.green
-                      : Colors.red),
+            
+            Divider(),
+            
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    // Display the current question
+                    Text(
+                      currentQuestion.questionText,
+                      style: TextStyle(fontSize: 20),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 20),
+                    
+                    // Text input for the user to enter their answer
+                    TextField(
+                      controller: answerController,
+                      decoration: InputDecoration(
+                        hintText: 'Type your answer here',
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                      ),
+                      style: TextStyle(fontSize: 18),
+                    ),
+                    SizedBox(height: 20),
+                    
+                    // Submit button
+                    ElevatedButton(
+                      onPressed: submitAnswer,
+                      child: Text('Submit Answer'),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: Size(double.infinity, 50),
+                      ),
+                    ),
+                    SizedBox(height: 15),
+                    
+                    // Display feedback message
+                    Text(
+                      feedbackMessage,
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: feedbackMessage.contains('Correct')
+                            ? Colors.green
+                            : Colors.red,
+                      ),
+                    ),
+                    
+                    SizedBox(height: 15),
+                    
+                    // Show a checkmark if question is answered correctly
+                    if (questionAnswered[currentQuestionIndex])
+                      Icon(Icons.check_circle, color: Colors.green, size: 30),
+                  ],
+                ),
+              ),
             ),
-            SizedBox(height: 20),
-            // Display the current score and guesses left
-            Text(
-              'Score: $score/${currentQuestionIndex + 1}\nGuesses left: $totalGuesses',
-              style: TextStyle(fontSize: 18),
-              textAlign: TextAlign.center,
+            
+            // Navigation buttons
+            Container(
+              padding: EdgeInsets.symmetric(vertical: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: currentQuestionIndex > 0 ? previousQuestion : null,
+                    child: Icon(Icons.arrow_back),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueGrey,
+                    ),
+                  ),
+                  Text(
+                    'Question ${currentQuestionIndex + 1} of ${questions.length}',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  ElevatedButton(
+                    onPressed: currentQuestionIndex < questions.length - 1 ? nextQuestion : null,
+                    child: Icon(Icons.arrow_forward),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueGrey,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
