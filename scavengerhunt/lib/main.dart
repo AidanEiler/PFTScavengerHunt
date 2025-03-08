@@ -276,7 +276,8 @@ class _GameScreenState extends State<GameScreen> {
 
   // Function to navigate to the previous question
   void previousQuestion() {
-    if (currentQuestionIndex > 0) {
+    if (currentQuestionIndex > 0 &&
+        !questionAnswered[currentQuestionIndex - 1]) {
       setState(() {
         currentQuestionIndex--;
         feedbackMessage = ''; // Reset feedback message when going back
@@ -433,8 +434,10 @@ class _GameScreenState extends State<GameScreen> {
                       .center, // Align buttons horizontally in the center
                   children: [
                     ElevatedButton(
-                      onPressed:
-                          currentQuestionIndex > 0 ? previousQuestion : null,
+                      onPressed: questionAnswered[currentQuestionIndex] ||
+                              currentQuestionIndex == 0
+                          ? null
+                          : previousQuestion,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blueGrey,
                       ),
