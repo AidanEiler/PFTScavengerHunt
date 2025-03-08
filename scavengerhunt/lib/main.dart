@@ -484,8 +484,9 @@ class _GameScreenState extends State<GameScreen> {
               ElevatedButton(
                 onPressed: submitWordGuess,
                 style: ElevatedButton.styleFrom(
-                  minimumSize: Size(double.infinity, 50),
-                ), // Use submitWordGuess here
+                  minimumSize:
+                      Size(200, 50), // Same size as Submit Answer button
+                ),
                 child: Text('Submit Word Guess'),
               ),
             ],
