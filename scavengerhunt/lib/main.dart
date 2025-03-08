@@ -4,6 +4,8 @@ import 'dart:math';
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -17,6 +19,8 @@ class MyApp extends StatelessWidget {
 }
 
 class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,12 +50,12 @@ class HomeScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => GameScreen()),
                 );
               },
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+              ),
               child: Text(
                 'Start Exploring',
                 style: TextStyle(fontSize: 24),
-              ),
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
               ),
             ),
           ],
@@ -62,6 +66,8 @@ class HomeScreen extends StatelessWidget {
 }
 
 class GameScreen extends StatefulWidget {
+  const GameScreen({super.key});
+
   @override
   _GameScreenState createState() => _GameScreenState();
 }
@@ -100,11 +106,13 @@ class _GameScreenState extends State<GameScreen> {
       correctAnswer: 'Mahmood Jasim',
     ),
     Question(
-      questionText: 'Question 7: What room number is the office of Nash Mahmood?',
+      questionText:
+          'Question 7: What room number is the office of Nash Mahmood?',
       correctAnswer: '3209H',
     ),
     Question(
-      questionText: 'Question 8: You\'re almost done! In the central lobby of the third floor, how many screens are set up there?',
+      questionText:
+          'Question 8: You\'re almost done! In the central lobby of the third floor, how many screens are set up there?',
       correctAnswer: '1',
     ),
   ];
@@ -113,59 +121,38 @@ class _GameScreenState extends State<GameScreen> {
   TextEditingController answerController = TextEditingController();
   TextEditingController wordGuessController = TextEditingController();
   String feedbackMessage = '';
-  
+
   // Track answered questions
   List<bool> questionAnswered = [];
-  
-  // Secret word to be revealed
+
   final String secretWord = "MR DANIEL";
   List<bool> revealedLetters = [];
-  
+
   @override
   void initState() {
     super.initState();
-    // Initialize questionAnswered list with all false values
     questionAnswered = List.generate(questions.length, (index) => false);
-    // Initialize revealedLetters list with all false values
     revealedLetters = List.generate(secretWord.length, (index) => false);
   }
 
   // Function to handle the answer submission
   void submitAnswer() {
     String userAnswer = answerController.text.trim().toLowerCase();
-    String correctAnswer = questions[currentQuestionIndex].correctAnswer.toLowerCase();
-    
-    // For the fifth question, allow both "Civil" and "Civil engineering" as valid answers
-    if (currentQuestionIndex == 4 && (userAnswer == 'civil' || userAnswer == 'civil engineering')) {
+    String correctAnswer =
+        questions[currentQuestionIndex].correctAnswer.toLowerCase();
+
+    // Check if the user's answer matches the correct answer
+    if (userAnswer == correctAnswer) {
       setState(() {
         if (!questionAnswered[currentQuestionIndex]) {
           questionAnswered[currentQuestionIndex] = true;
-          revealRandomLetter();
+          revealRandomLetter(); // Reveal a letter of the secret word
         }
         feedbackMessage = 'Correct!';
       });
-      
-      // Automatically move to the next question if possible
+
+      // Automatically move to the next question after a brief delay
       if (currentQuestionIndex < questions.length - 1) {
-        // Use Future.delayed to give user a moment to see "Correct!" message
-        Future.delayed(Duration(milliseconds: 800), () {
-          if (mounted) {
-            nextQuestion();
-          }
-        });
-      }
-    } else if (userAnswer == correctAnswer) {
-      setState(() {
-        if (!questionAnswered[currentQuestionIndex]) {
-          questionAnswered[currentQuestionIndex] = true;
-          revealRandomLetter();
-        }
-        feedbackMessage = 'Correct!';
-      });
-      
-      // Automatically move to the next question if possible
-      if (currentQuestionIndex < questions.length - 1) {
-        // Use Future.delayed to give user a moment to see "Correct!" message
         Future.delayed(Duration(milliseconds: 800), () {
           if (mounted) {
             nextQuestion();
@@ -177,59 +164,55 @@ class _GameScreenState extends State<GameScreen> {
         feedbackMessage = 'Incorrect! Try again.';
       });
     }
-    
+
     // Clear the input field after submitting the answer
     answerController.clear();
-    
+
     // Check if all letters have been revealed
     if (revealedLetters.every((revealed) => revealed)) {
       _showCompletionDialog();
     }
   }
-  
+
   // Function to reveal a random letter in the secret word
   void revealRandomLetter() {
-    // Count unrevealed letters (skip spaces)
     List<int> unrevealedIndices = [];
     for (int i = 0; i < revealedLetters.length; i++) {
       if (!revealedLetters[i] && secretWord[i] != ' ') {
         unrevealedIndices.add(i);
       }
     }
-    
-    // If there are still letters to reveal
+
     if (unrevealedIndices.isNotEmpty) {
-      // Select a random unrevealed letter
       final random = Random();
-      int randomIndex = unrevealedIndices[random.nextInt(unrevealedIndices.length)];
-      
-      // Reveal that letter
+      int randomIndex =
+          unrevealedIndices[random.nextInt(unrevealedIndices.length)];
       setState(() {
         revealedLetters[randomIndex] = true;
       });
     }
   }
-  
-  // Navigate to the next question
-  void nextQuestion() {
-    if (currentQuestionIndex < questions.length - 1) {
+
+  // Function to submit the word guess
+  void submitWordGuess() {
+    String userWordGuess = wordGuessController.text.trim().toLowerCase();
+
+    // Check if the word guess is correct
+    if (userWordGuess == secretWord.toLowerCase()) {
       setState(() {
-        currentQuestionIndex++;
-        feedbackMessage = '';
-        answerController.clear();
+        feedbackMessage = 'Correct! You guessed the word!';
+      });
+
+      // Show completion dialog after word is guessed correctly
+      _showCompletionDialog();
+    } else {
+      setState(() {
+        feedbackMessage = 'Incorrect! Try again.';
       });
     }
-  }
-  
-  // Navigate to the previous question
-  void previousQuestion() {
-    if (currentQuestionIndex > 0) {
-      setState(() {
-        currentQuestionIndex--;
-        feedbackMessage = '';
-        answerController.clear();
-      });
-    }
+
+    // Clear the input field after submitting the word
+    wordGuessController.clear();
   }
 
   // Function to show the completion dialog
@@ -258,7 +241,7 @@ class _GameScreenState extends State<GameScreen> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                resetGame(); // Reset game for replay
+                resetGame(); // Reset the game for a replay
               },
               child: Text('Play Again'),
             ),
@@ -271,7 +254,6 @@ class _GameScreenState extends State<GameScreen> {
   // Function to reset the game
   void resetGame() {
     setState(() {
-      // Reset game state
       currentQuestionIndex = 0;
       questionAnswered = List.generate(questions.length, (index) => false);
       revealedLetters = List.generate(secretWord.length, (index) => false);
@@ -280,197 +262,234 @@ class _GameScreenState extends State<GameScreen> {
     });
   }
 
-  // Function to submit the word guess
-  void submitWordGuess() {
-    String userWordGuess = wordGuessController.text.trim().toLowerCase();
-
-    // Check if the word guess is correct
-    if (userWordGuess == secretWord.toLowerCase()) {
+  // Function to navigate to the next question
+  void nextQuestion() {
+    if (currentQuestionIndex < questions.length - 1) {
       setState(() {
-        feedbackMessage = 'Correct! You guessed the word!';
-      });
-
-      // Show completion dialog after word is guessed correctly
-      _showCompletionDialog();
-    } else {
-      setState(() {
-        feedbackMessage = 'Incorrect! Try again.';
+        currentQuestionIndex++;
+        feedbackMessage =
+            ''; // Reset feedback message when moving to next question
+        answerController.clear();
       });
     }
+  }
 
-    // Clear the input field after submitting the word
-    wordGuessController.clear();
+  // Function to navigate to the previous question
+  void previousQuestion() {
+    if (currentQuestionIndex > 0) {
+      setState(() {
+        currentQuestionIndex--;
+        feedbackMessage = ''; // Reset feedback message when going back
+        answerController.clear();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final currentQuestion = questions[currentQuestionIndex];
-    
+
     // Count answered questions
     int answeredCount = questionAnswered.where((answered) => answered).length;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text('PFT Explorer Quiz'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            // Secret word display (hangman-style)
-            Container(
-              padding: EdgeInsets.symmetric(vertical: 20),
-              child: Column(
-                children: [
-                  Text(
-                    'Secret Word',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      secretWord.length,
-                      (index) => Container(
-                        margin: EdgeInsets.symmetric(horizontal: 5),
-                        width: 40,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          border: Border(bottom: BorderSide(width: 2, color: secretWord[index] == ' ' ? Colors.transparent : Colors.black)),
-                        ),
-                        child: Center(
-                          child: secretWord[index] == ' ' 
-                              ? SizedBox(width: 20) // Show empty space
-                              : (revealedLetters[index]
-                                  ? Text(
-                                      secretWord[index],
-                                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                                    )
-                                  : Text('')),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            SizedBox(height: 10),
-            
-            // Progress indicator
-            Container(
-              padding: EdgeInsets.symmetric(vertical: 10),
-              child: Text(
-                'Progress: $answeredCount/${questions.length} questions answered',
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
-            
-            Divider(),
-            
-            Expanded(
-              child: SingleChildScrollView(
+      body: Center(
+        // Centering everything in the middle
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+              horizontal: 20.0), // reduce left and right padding
+          child: Column(
+            mainAxisAlignment:
+                MainAxisAlignment.center, // Center the content vertically
+            crossAxisAlignment:
+                CrossAxisAlignment.center, // Center horizontally
+            children: [
+              // Secret word display (hangman-style)
+              Container(
+                padding: EdgeInsets.symmetric(vertical: 10),
                 child: Column(
                   children: [
-                    // Display the current question
                     Text(
-                      currentQuestion.questionText,
-                      style: TextStyle(fontSize: 20),
-                      textAlign: TextAlign.center,
+                      'Secret Word',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(height: 20),
-                    
-                    // Text input for the user to enter their answer
-                    TextField(
-                      controller: answerController,
-                      decoration: InputDecoration(
-                        hintText: 'Type your answer here',
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-                      ),
-                      style: TextStyle(fontSize: 18),
-                    ),
-                    SizedBox(height: 20),
-                    
-                    // Submit button
-                    ElevatedButton(
-                      onPressed: submitAnswer,
-                      child: Text('Submit Answer'),
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: Size(double.infinity, 50),
-                      ),
-                    ),
-                    SizedBox(height: 15),
-                    
-                    // Display feedback message
-                    Text(
-                      feedbackMessage,
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: feedbackMessage.contains('Correct')
-                            ? Colors.green
-                            : Colors.red,
+                    SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        secretWord.length,
+                        (index) => Container(
+                          margin: EdgeInsets.symmetric(horizontal: 5),
+                          width: 40,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            border: Border(
+                                bottom: BorderSide(
+                                    width: 2,
+                                    color: secretWord[index] == ' '
+                                        ? Colors.transparent
+                                        : Colors.black)),
+                          ),
+                          child: Center(
+                            child: secretWord[index] == ' '
+                                ? SizedBox(width: 20) // Show empty space
+                                : (revealedLetters[index]
+                                    ? Text(
+                                        secretWord[index],
+                                        style: TextStyle(
+                                            fontSize: 28,
+                                            fontWeight: FontWeight.bold),
+                                      )
+                                    : Text('')),
+                          ),
+                        ),
                       ),
                     ),
-                    
-                    SizedBox(height: 15),
-                    
-                    // Show a checkmark if question is answered correctly
-                    if (questionAnswered[currentQuestionIndex])
-                      Icon(Icons.check_circle, color: Colors.green, size: 30),
                   ],
                 ),
               ),
-            ),
-            
-            // Navigation buttons
-            Container(
-              padding: EdgeInsets.symmetric(vertical: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    onPressed: currentQuestionIndex > 0 ? previousQuestion : null,
-                    child: Icon(Icons.arrow_back),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueGrey,
-                    ),
-                  ),
-                  Text(
-                    'Question ${currentQuestionIndex + 1} of ${questions.length}',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  ElevatedButton(
-                    onPressed: currentQuestionIndex < questions.length - 1 ? nextQuestion : null,
-                    child: Icon(Icons.arrow_forward),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueGrey,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 20),
+              SizedBox(height: 10),
 
-            // Word Guess section
-            TextField(
-              controller: wordGuessController,
-              decoration: InputDecoration(
-                hintText: 'Guess the secret word',
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+              // Progress indicator
+              Text(
+                'Progress: $answeredCount/${questions.length} questions answered',
+                style: TextStyle(fontSize: 16),
               ),
-              style: TextStyle(fontSize: 18),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: submitWordGuess,
-              child: Text('Submit Word Guess'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50),
+
+              Divider(),
+
+              // Display the current question
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 15.0),
+                child: Text(
+                  currentQuestion.questionText,
+                  style: TextStyle(fontSize: 20),
+                  textAlign: TextAlign.center,
+                ),
               ),
-            ),
-          ],
+
+              // Text input for the user to enter their answer
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                child: SizedBox(
+                  width:
+                      200, // Set the width of the text box to match the button width
+                  child: TextField(
+                    controller: answerController,
+                    decoration: InputDecoration(
+                      hintText: 'Type your answer here',
+                      border: OutlineInputBorder(),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                    ),
+                    style: TextStyle(fontSize: 18),
+                  ),
+                ),
+              ),
+
+              SizedBox(height: 10),
+
+              // Submit button
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                child: ElevatedButton(
+                  onPressed: submitAnswer,
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    minimumSize:
+                        Size(200, 50), // Fixed width for the submit button
+                  ),
+                  child: Text('Submit Answer'),
+                ),
+              ),
+              SizedBox(height: 15),
+
+              // Display feedback message
+              Text(
+                feedbackMessage,
+                style: TextStyle(
+                  fontSize: 18,
+                  color: feedbackMessage.contains('Correct')
+                      ? Colors.green
+                      : Colors.red,
+                ),
+              ),
+
+              SizedBox(height: 15),
+
+              // Show a checkmark if question is answered correctly
+              if (questionAnswered[currentQuestionIndex])
+                Icon(Icons.check_circle, color: Colors.green, size: 30),
+
+              // Navigation buttons
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment
+                      .center, // Align buttons horizontally in the center
+                  children: [
+                    ElevatedButton(
+                      onPressed:
+                          currentQuestionIndex > 0 ? previousQuestion : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueGrey,
+                      ),
+                      child: Icon(Icons.arrow_back),
+                    ),
+                    SizedBox(width: 20),
+                    Text(
+                      'Question ${currentQuestionIndex + 1} of ${questions.length}',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(width: 20),
+                    ElevatedButton(
+                      onPressed: currentQuestionIndex < questions.length - 1
+                          ? nextQuestion
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueGrey,
+                      ),
+                      child: Icon(Icons.arrow_forward),
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: 20),
+
+              // Word Guess section
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                child: SizedBox(
+                  width:
+                      200, // Set the width of the text box to match the button width
+                  child: TextField(
+                    controller: wordGuessController,
+                    decoration: InputDecoration(
+                      hintText: 'Guess the secret word',
+                      border: OutlineInputBorder(),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                    ),
+                    style: TextStyle(fontSize: 18),
+                  ),
+                ),
+              ),
+              SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: submitWordGuess,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: Size(double.infinity, 50),
+                ), // Use submitWordGuess here
+                child: Text('Submit Word Guess'),
+              ),
+            ],
+          ),
         ),
       ),
     );
