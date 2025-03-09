@@ -3,7 +3,6 @@ import 'dart:math';
 
 void main() => runApp(MyApp());
 
-// Define LSU colors
 class LSUColors {
   static const Color purple = Color(0xFF461D7C);
   static const Color gold = Color(0xFFFDD023);
@@ -229,13 +228,23 @@ class _GameScreenState extends State<GameScreen> {
     }
 
     answerController.clear();
-
+    
+    if (questionAnswered.every((answered) => answered == true)) {
+      setState(() {
+        revealedLetters = List.generate(secretWord.length, (index) => true);
+      });
+      Future.delayed(Duration(milliseconds: 500), () {
+        if (mounted) {
+          _showCompletionDialog();
+        }
+      });
+    }
+    
     if (revealedLetters.every((revealed) => revealed)) {
       _showCompletionDialog();
     }
   }
 
-  // reveal a random letter in the secret word
   void revealRandomLetter() {
     List<int> unrevealedIndices = [];
     for (int i = 0; i < revealedLetters.length; i++) {
@@ -254,11 +263,9 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
-  // submit the word guess
   void submitWordGuess() {
     String userWordGuess = wordGuessController.text.trim().toLowerCase();
 
-    // word guess is correct?
     if (userWordGuess == secretWord.toLowerCase()) {
       setState(() {
         feedbackMessage = 'Correct! You guessed the word!';
@@ -273,8 +280,6 @@ class _GameScreenState extends State<GameScreen> {
 
     wordGuessController.clear();
   }
-
-
 
   void _showCompletionDialog() {
     showDialog(
@@ -322,7 +327,7 @@ class _GameScreenState extends State<GameScreen> {
               ),
               SizedBox(height: 20),
               Text(
-                'You\'ve completed the Tiger Trail Quest!',
+                'You\'ve completed the PFT Code Cracker challenge!',
                 style: TextStyle(fontSize: 16),
                 textAlign: TextAlign.center,
               ),
@@ -398,12 +403,11 @@ class _GameScreenState extends State<GameScreen> {
   @override
   Widget build(BuildContext context) {
     final currentQuestion = questions[currentQuestionIndex];
-
     int answeredCount = questionAnswered.where((answered) => answered).length;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Tiger Trail Quest'),
+        title: Text('PFT Code Cracker'),
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),
@@ -612,8 +616,6 @@ class _GameScreenState extends State<GameScreen> {
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        
-
                       ],
                     ),
                   ),
@@ -621,71 +623,69 @@ class _GameScreenState extends State<GameScreen> {
 
                 SizedBox(height: 24),
 
-                Container(
-                  width: 280,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: TextField(
-                    controller: answerController,
-                    decoration: InputDecoration(
-                      hintText: 'Type your answer here',
-                      filled: true,
-                      fillColor: Colors.white,
-                      prefixIcon: Icon(Icons.search, color: LSUColors.purple),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: LSUColors.purple, width: 2),
-                      ),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                if (!questionAnswered[currentQuestionIndex])
+                  Container(
+                    width: 280,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    style: TextStyle(fontSize: 16),
-                    textCapitalization: TextCapitalization.sentences,
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => submitAnswer(),
+                    child: TextField(
+                      controller: answerController,
+                      decoration: InputDecoration(
+                        hintText: 'Type your answer here',
+                        filled: true,
+                        fillColor: Colors.white,
+                        prefixIcon: Icon(Icons.search, color: LSUColors.purple),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: LSUColors.purple, width: 2),
+                        ),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                      ),
+                      style: TextStyle(fontSize: 16),
+                      textCapitalization: TextCapitalization.sentences,
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: (_) => submitAnswer(),
+                    ),
                   ),
-                ),
 
                 SizedBox(height: 16),
 
-                ElevatedButton.icon(
-                  onPressed: submitAnswer,
-                  icon: Icon(Icons.check_circle_outline),
-                  label: Text('Submit Answer'),
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    minimumSize: Size(280, 48),
+                if (!questionAnswered[currentQuestionIndex])
+                  ElevatedButton.icon(
+                    onPressed: submitAnswer,
+                    icon: Icon(Icons.check_circle_outline),
+                    label: Text('Submit Answer'),
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      minimumSize: Size(280, 48),
+                    ),
                   ),
-                ),
-
-                if (feedbackMessage.isNotEmpty)
+                
+                if (questionAnswered[currentQuestionIndex])
                   Container(
                     margin: EdgeInsets.only(top: 16),
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
-                      color: feedbackMessage.contains('Correct')
-                          ? Colors.green.withOpacity(0.1)
-                          : Colors.red.withOpacity(0.1),
+                      color: Colors.green.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: feedbackMessage.contains('Correct')
-                            ? Colors.green
-                            : Colors.red,
+                        color: Colors.green,
                         width: 1,
                       ),
                     ),
@@ -693,12 +693,41 @@ class _GameScreenState extends State<GameScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          feedbackMessage.contains('Correct')
-                              ? Icons.check_circle
-                              : Icons.error,
-                          color: feedbackMessage.contains('Correct')
-                              ? Colors.green
-                              : Colors.red,
+                          Icons.check_circle,
+                          color: Colors.green,
+                          size: 20,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'Correct! Question completed',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.green,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                if (feedbackMessage.contains('Incorrect'))
+                  Container(
+                    margin: EdgeInsets.only(top: 16),
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.red,
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.error,
+                          color: Colors.red,
                           size: 18,
                         ),
                         SizedBox(width: 8),
@@ -706,9 +735,7 @@ class _GameScreenState extends State<GameScreen> {
                           feedbackMessage,
                           style: TextStyle(
                             fontSize: 16,
-                            color: feedbackMessage.contains('Correct')
-                                ? Colors.green
-                                : Colors.red,
+                            color: Colors.red,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
