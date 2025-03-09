@@ -88,7 +88,7 @@ class _GameScreenState extends State<GameScreen> {
     Question(
       questionText:
           'Question 3: By now you should have found a set of wide stairs. Going up, how many steps is it?(wooden step)',
-      correctAnswer: '11',
+      correctAnswer: '32',
     ),
     Question(
       questionText:
