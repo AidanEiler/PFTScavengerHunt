@@ -362,7 +362,7 @@ class _GameScreenState extends State<GameScreen> {
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
               },
-              child: Text('Home'),
+              child: Text('Review'),
             ),
           ],
         );
