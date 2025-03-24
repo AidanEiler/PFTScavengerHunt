@@ -75,7 +75,7 @@ class HomeScreen extends StatelessWidget {
               Text(
                 'PFT Code Cracker',
                 style: TextStyle(
-                  fontSize: 32, 
+                  fontSize: 32,
                   fontWeight: FontWeight.bold,
                   color: LSUColors.purple,
                   letterSpacing: 1.2,
@@ -228,7 +228,7 @@ class _GameScreenState extends State<GameScreen> {
     }
 
     answerController.clear();
-    
+
     if (questionAnswered.every((answered) => answered == true)) {
       setState(() {
         revealedLetters = List.generate(secretWord.length, (index) => true);
@@ -239,7 +239,7 @@ class _GameScreenState extends State<GameScreen> {
         }
       });
     }
-    
+
     if (revealedLetters.every((revealed) => revealed)) {
       _showCompletionDialog();
     }
@@ -335,7 +335,7 @@ class _GameScreenState extends State<GameScreen> {
               Text(
                 'Geaux Tigers! 🐯',
                 style: TextStyle(
-                  fontSize: 18, 
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: LSUColors.darkPurple,
                 ),
@@ -384,7 +384,7 @@ class _GameScreenState extends State<GameScreen> {
     if (currentQuestionIndex < questions.length - 1) {
       setState(() {
         currentQuestionIndex++;
-        feedbackMessage = ''; 
+        feedbackMessage = '';
         answerController.clear();
       });
     }
@@ -451,7 +451,8 @@ class _GameScreenState extends State<GameScreen> {
         ),
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -462,7 +463,8 @@ class _GameScreenState extends State<GameScreen> {
                   decoration: BoxDecoration(
                     color: LSUColors.purple.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: LSUColors.purple.withOpacity(0.3), width: 1),
+                    border: Border.all(
+                        color: LSUColors.purple.withOpacity(0.3), width: 1),
                   ),
                   child: Column(
                     children: [
@@ -491,13 +493,17 @@ class _GameScreenState extends State<GameScreen> {
                             width: 32,
                             height: 42,
                             decoration: BoxDecoration(
-                              color: secretWord[index] != ' ' 
-                                  ? (revealedLetters[index] ? LSUColors.lightGold : Colors.white)
+                              color: secretWord[index] != ' '
+                                  ? (revealedLetters[index]
+                                      ? LSUColors.lightGold
+                                      : Colors.white)
                                   : Colors.transparent,
                               border: Border.all(
                                 color: secretWord[index] == ' '
                                     ? Colors.transparent
-                                    : (revealedLetters[index] ? LSUColors.gold : LSUColors.purple.withOpacity(0.3)),
+                                    : (revealedLetters[index]
+                                        ? LSUColors.gold
+                                        : LSUColors.purple.withOpacity(0.3)),
                                 width: revealedLetters[index] ? 2 : 1,
                               ),
                               borderRadius: BorderRadius.circular(6),
@@ -522,7 +528,6 @@ class _GameScreenState extends State<GameScreen> {
                     ],
                   ),
                 ),
-
                 Container(
                   margin: EdgeInsets.only(bottom: 20),
                   child: Column(
@@ -530,7 +535,8 @@ class _GameScreenState extends State<GameScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.analytics, color: LSUColors.purple, size: 18),
+                          Icon(Icons.analytics,
+                              color: LSUColors.purple, size: 18),
                           SizedBox(width: 6),
                           Text(
                             'Progress: $answeredCount/${questions.length}',
@@ -549,13 +555,13 @@ class _GameScreenState extends State<GameScreen> {
                           value: answeredCount / questions.length,
                           minHeight: 10,
                           backgroundColor: Colors.grey.shade200,
-                          valueColor: AlwaysStoppedAnimation<Color>(LSUColors.gold),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(LSUColors.gold),
                         ),
                       ),
                     ],
                   ),
                 ),
-
                 Card(
                   elevation: 3,
                   shape: RoundedRectangleBorder(
@@ -620,9 +626,7 @@ class _GameScreenState extends State<GameScreen> {
                     ),
                   ),
                 ),
-
                 SizedBox(height: 24),
-
                 if (!questionAnswered[currentQuestionIndex])
                   Container(
                     width: 280,
@@ -653,9 +657,11 @@ class _GameScreenState extends State<GameScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: LSUColors.purple, width: 2),
+                          borderSide:
+                              BorderSide(color: LSUColors.purple, width: 2),
                         ),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 15, vertical: 15),
                       ),
                       style: TextStyle(fontSize: 16),
                       textCapitalization: TextCapitalization.sentences,
@@ -663,20 +669,18 @@ class _GameScreenState extends State<GameScreen> {
                       onSubmitted: (_) => submitAnswer(),
                     ),
                   ),
-
                 SizedBox(height: 16),
-
                 if (!questionAnswered[currentQuestionIndex])
                   ElevatedButton.icon(
                     onPressed: submitAnswer,
                     icon: Icon(Icons.check_circle_outline),
                     label: Text('Submit Answer'),
                     style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       minimumSize: Size(280, 48),
                     ),
                   ),
-                
                 if (questionAnswered[currentQuestionIndex])
                   Container(
                     margin: EdgeInsets.only(top: 16),
@@ -709,7 +713,6 @@ class _GameScreenState extends State<GameScreen> {
                       ],
                     ),
                   ),
-
                 if (feedbackMessage.contains('Incorrect'))
                   Container(
                     margin: EdgeInsets.only(top: 16),
@@ -742,22 +745,24 @@ class _GameScreenState extends State<GameScreen> {
                       ],
                     ),
                   ),
-
                 SizedBox(height: 24),
-
                 Container(
                   margin: EdgeInsets.only(top: 8),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       IconButton(
-                        onPressed: currentQuestionIndex > 0 ? previousQuestion : null,
+                        onPressed:
+                            currentQuestionIndex > 0 ? previousQuestion : null,
                         icon: Icon(Icons.arrow_back_ios),
-                        color: currentQuestionIndex > 0 ? LSUColors.purple : Colors.grey,
+                        color: currentQuestionIndex > 0
+                            ? LSUColors.purple
+                            : Colors.grey,
                         tooltip: 'Previous',
                       ),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
                           color: LSUColors.purple.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(20),
@@ -771,17 +776,19 @@ class _GameScreenState extends State<GameScreen> {
                         ),
                       ),
                       IconButton(
-                        onPressed: currentQuestionIndex < questions.length - 1 ? nextQuestion : null,
+                        onPressed: currentQuestionIndex < questions.length - 1
+                            ? nextQuestion
+                            : null,
                         icon: Icon(Icons.arrow_forward_ios),
-                        color: currentQuestionIndex < questions.length - 1 ? LSUColors.purple : Colors.grey,
+                        color: currentQuestionIndex < questions.length - 1
+                            ? LSUColors.purple
+                            : Colors.grey,
                         tooltip: 'Next',
                       ),
                     ],
                   ),
                 ),
-
                 Divider(height: 40, color: Colors.grey.shade300),
-
                 Container(
                   padding: EdgeInsets.symmetric(vertical: 16, horizontal: 20),
                   decoration: BoxDecoration(
@@ -799,7 +806,7 @@ class _GameScreenState extends State<GameScreen> {
                         ),
                       ),
                       SizedBox(height: 16),
-                      Container(
+                      SizedBox(
                         width: 280,
                         child: TextField(
                           controller: wordGuessController,
@@ -807,13 +814,15 @@ class _GameScreenState extends State<GameScreen> {
                             hintText: 'Enter the secret word',
                             filled: true,
                             fillColor: Colors.white,
-                            prefixIcon: Icon(Icons.vpn_key, color: LSUColors.gold),
+                            prefixIcon:
+                                Icon(Icons.vpn_key, color: LSUColors.gold),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: LSUColors.gold, width: 2),
+                              borderSide:
+                                  BorderSide(color: LSUColors.gold, width: 2),
                             ),
                           ),
                           textCapitalization: TextCapitalization.characters,
@@ -829,7 +838,8 @@ class _GameScreenState extends State<GameScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: LSUColors.gold,
                           foregroundColor: LSUColors.purple,
-                          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 12),
                           minimumSize: Size(280, 48),
                         ),
                       ),

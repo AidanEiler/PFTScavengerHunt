@@ -1,0 +1,2 @@
+C:/Flutter/PFTScavengerHunt/scavengerhunt/android/app/.cxx/Debug/674d19js/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Flutter/PFTScavengerHunt/scavengerhunt/android/app/.cxx/Debug/674d19js/armeabi-v7a/CMakeFiles/rebuild_cache.dir
