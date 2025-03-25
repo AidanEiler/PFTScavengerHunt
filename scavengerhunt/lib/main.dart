@@ -6,7 +6,7 @@ void main() => runApp(MyApp());
 class LSUColors {
   static const Color purple = Color(0xFF461D7C);
   static const Color gold = Color(0xFFFDD023);
-  static const Color lightGold = Color(0xFFFEE99D);
+  static const Color lightGold = Color(0xFFD29F13);
   static const Color darkPurple = Color(0xFF2D1250);
 }
 
@@ -64,7 +64,7 @@ class HomeScreen extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.white, LSUColors.lightGold],
+            colors: [LSUColors.lightGold, LSUColors.lightGold],
           ),
         ),
         child: Center(
@@ -72,6 +72,13 @@ class HomeScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SizedBox(height: 40),
+              // Add LSU logo
+              Image.asset(
+                'Assets/LSU.png',
+                width: 300, // Adjust the width as needed
+                height: 300, // Adjust the height as needed
+              ),
+              SizedBox(height: 20),
               Text(
                 'PFT Code Cracker',
                 style: TextStyle(
@@ -311,7 +318,7 @@ class _GameScreenState extends State<GameScreen> {
               Container(
                 padding: EdgeInsets.all(15),
                 decoration: BoxDecoration(
-                  color: LSUColors.lightGold,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
