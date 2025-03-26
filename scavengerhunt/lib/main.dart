@@ -188,265 +188,48 @@ class _GameScreenState extends State<GameScreen> {
           'Question 8: You\'re almost done! In the central lobby of the third floor, how many screens are set up there?',
       correctAnswer: '1',
     ),
+    Question(
+      questionText:
+          'Question 9: In section 1100, what is the room number of the auditorium?',
+      correctAnswer: '1101',
+    ),
+    Question(
+      questionText:
+          'Question 10: Where is the office of the G.O.A.T David Shepherd?',
+      correctAnswer: 'Dr. Shepherd\'s office',
+    ),
   ];
 
-  int currentQuestionIndex = 0;
-  TextEditingController answerController = TextEditingController();
-  TextEditingController wordGuessController = TextEditingController();
-  String feedbackMessage = '';
-
-  List<bool> questionAnswered = [];
-
-  final String secretWord = "MR DANIEL";
+  final String secretWord = "DR SHEPHERD";
   List<bool> revealedLetters = [];
+  List<bool> questionAnswered = [];
+  int currentLetterIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    questionAnswered = List.generate(questions.length, (index) => false);
     revealedLetters = List.generate(secretWord.length, (index) => false);
+    questionAnswered = List.generate(questions.length, (index) => false);
   }
 
-  void submitAnswer() {
-    String userAnswer = answerController.text.trim().toLowerCase();
-    String correctAnswer =
-        questions[currentQuestionIndex].correctAnswer.toLowerCase();
-
-    if (userAnswer == correctAnswer) {
+  void revealNextLetter() {
+    if (currentLetterIndex < secretWord.length) {
       setState(() {
-        if (!questionAnswered[currentQuestionIndex]) {
-          questionAnswered[currentQuestionIndex] = true;
-          revealRandomLetter();
-        }
-        feedbackMessage = 'Correct!';
-      });
-
-      if (currentQuestionIndex < questions.length - 1) {
-        Future.delayed(Duration(milliseconds: 800), () {
-          if (mounted) {
-            nextQuestion();
-          }
-        });
-      }
-    } else {
-      setState(() {
-        feedbackMessage = 'Incorrect! Try again.';
-      });
-    }
-
-    answerController.clear();
-
-    if (questionAnswered.every((answered) => answered == true)) {
-      setState(() {
-        revealedLetters = List.generate(secretWord.length, (index) => true);
-      });
-      Future.delayed(Duration(milliseconds: 500), () {
-        if (mounted) {
-          _showCompletionDialog();
-        }
-      });
-    }
-
-    if (revealedLetters.every((revealed) => revealed)) {
-      _showCompletionDialog();
-    }
-  }
-
-  void revealRandomLetter() {
-    List<int> unrevealedIndices = [];
-    for (int i = 0; i < revealedLetters.length; i++) {
-      if (!revealedLetters[i] && secretWord[i] != ' ') {
-        unrevealedIndices.add(i);
-      }
-    }
-
-    if (unrevealedIndices.isNotEmpty) {
-      final random = Random();
-      int randomIndex =
-          unrevealedIndices[random.nextInt(unrevealedIndices.length)];
-      setState(() {
-        revealedLetters[randomIndex] = true;
-      });
-    }
-  }
-
-  void submitWordGuess() {
-    String userWordGuess = wordGuessController.text.trim().toLowerCase();
-
-    if (userWordGuess == secretWord.toLowerCase()) {
-      setState(() {
-        feedbackMessage = 'Correct! You guessed the word!';
-      });
-
-      _showCompletionDialog();
-    } else {
-      setState(() {
-        feedbackMessage = 'Incorrect! Try again.';
-      });
-    }
-
-    wordGuessController.clear();
-  }
-
-  void _showCompletionDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.emoji_events, color: LSUColors.gold, size: 30),
-              SizedBox(width: 10),
-              Text(
-                'Congratulations!',
-                style: TextStyle(
-                  color: LSUColors.purple,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  'Secret Word: $secretWord',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: LSUColors.purple,
-                    letterSpacing: 1.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              SizedBox(height: 20),
-              Text(
-                'You\'ve completed the PFT Code Cracker challenge!',
-                style: TextStyle(fontSize: 16),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 10),
-              Text(
-                'Geaux Tigers! 🐯',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: LSUColors.darkPurple,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                resetGame();
-              },
-              child: Text(
-                'Play Again',
-                style: TextStyle(
-                  color: LSUColors.purple,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
-              },
-              child: Text('Review'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void resetGame() {
-    setState(() {
-      currentQuestionIndex = 0;
-      questionAnswered = List.generate(questions.length, (index) => false);
-      revealedLetters = List.generate(secretWord.length, (index) => false);
-      feedbackMessage = '';
-      wordGuessController.clear();
-    });
-  }
-
-  void nextQuestion() {
-    if (currentQuestionIndex < questions.length - 1) {
-      setState(() {
-        currentQuestionIndex++;
-        feedbackMessage = '';
-        answerController.clear();
-      });
-    }
-  }
-
-  void previousQuestion() {
-    if (currentQuestionIndex > 0) {
-      setState(() {
-        currentQuestionIndex--;
-        feedbackMessage = '';
-        answerController.clear();
+        revealedLetters[currentLetterIndex] = true;
+        currentLetterIndex++;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentQuestion = questions[currentQuestionIndex];
-    int answeredCount = questionAnswered.where((answered) => answered).length;
-
     return Scaffold(
       appBar: AppBar(
         title: Text('PFT Code Cracker'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text('Reset Quest?'),
-                    content: Text('This will clear all your progress.'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text('Cancel'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          resetGame();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                        ),
-                        child: Text('Reset'),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          ),
-        ],
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -456,405 +239,194 @@ class _GameScreenState extends State<GameScreen> {
             colors: [Colors.white, LSUColors.lightGold.withOpacity(0.3)],
           ),
         ),
-        child: Center(
-          child: SingleChildScrollView(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  margin: EdgeInsets.symmetric(vertical: 20),
-                  padding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: LSUColors.purple.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: LSUColors.purple.withOpacity(0.3), width: 1),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Secret Word Display
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => WordGuessScreen(
+                        secretWord: secretWord,
+                        revealedLetters: revealedLetters,
+                      ),
+                    ),
+                  );
+                },
+                child: Card(
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
                   ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          LSUColors.gold.withOpacity(0.1),
+                          LSUColors.gold.withOpacity(0.05),
+                        ],
+                      ),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(20),
+                      child: Column(
                         children: [
-                          Icon(Icons.lock_open, color: LSUColors.gold),
-                          SizedBox(width: 8),
                           Text(
                             'Secret Word',
                             style: TextStyle(
-                              fontSize: 20,
+                              fontSize: 24,
                               fontWeight: FontWeight.bold,
-                              color: LSUColors.purple,
+                              color: LSUColors.gold,
                             ),
                           ),
-                        ],
-                      ),
-                      SizedBox(height: 15),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(
-                          secretWord.length,
-                          (index) => Container(
-                            margin: EdgeInsets.symmetric(horizontal: 4),
-                            width: 32,
-                            height: 42,
-                            decoration: BoxDecoration(
-                              color: secretWord[index] != ' '
-                                  ? (revealedLetters[index]
-                                      ? LSUColors.lightGold
-                                      : Colors.white)
-                                  : Colors.transparent,
-                              border: Border.all(
-                                color: secretWord[index] == ' '
-                                    ? Colors.transparent
-                                    : (revealedLetters[index]
-                                        ? LSUColors.gold
-                                        : LSUColors.purple.withOpacity(0.3)),
-                                width: revealedLetters[index] ? 2 : 1,
+                          SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(
+                              secretWord.length,
+                              (index) => Container(
+                                margin: EdgeInsets.symmetric(horizontal: 4),
+                                width: 30,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: secretWord[index] != ' '
+                                      ? (revealedLetters[index]
+                                          ? LSUColors.lightGold
+                                          : Colors.white)
+                                      : Colors.transparent,
+                                  border: Border.all(
+                                    color: secretWord[index] == ' '
+                                        ? Colors.transparent
+                                        : (revealedLetters[index]
+                                            ? LSUColors.gold
+                                            : LSUColors.purple.withOpacity(0.3)),
+                                    width: revealedLetters[index] ? 2 : 1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Center(
+                                  child: secretWord[index] == ' '
+                                      ? SizedBox(width: 16)
+                                      : (revealedLetters[index]
+                                          ? Text(
+                                              secretWord[index],
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                                color: LSUColors.purple,
+                                              ),
+                                            )
+                                          : Text('')),
+                                ),
                               ),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Center(
-                              child: secretWord[index] == ' '
-                                  ? SizedBox(width: 16)
-                                  : (revealedLetters[index]
-                                      ? Text(
-                                          secretWord[index],
-                                          style: TextStyle(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.bold,
-                                            color: LSUColors.purple,
-                                          ),
-                                        )
-                                      : Text('')),
                             ),
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  margin: EdgeInsets.only(bottom: 20),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.analytics,
-                              color: LSUColors.purple, size: 18),
-                          SizedBox(width: 6),
+                          SizedBox(height: 10),
                           Text(
-                            'Progress: $answeredCount/${questions.length}',
+                            'Tap to guess the word',
                             style: TextStyle(
-                              fontSize: 16,
                               color: LSUColors.darkPurple,
-                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
                             ),
                           ),
                         ],
                       ),
-                      SizedBox(height: 8),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: LinearProgressIndicator(
-                          value: answeredCount / questions.length,
-                          minHeight: 10,
-                          backgroundColor: Colors.grey.shade200,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(LSUColors.gold),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-                Card(
-                  elevation: 3,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(
-                      color: questionAnswered[currentQuestionIndex]
-                          ? LSUColors.gold
-                          : Colors.transparent,
-                      width: 2,
+              ),
+              SizedBox(height: 20),
+              // Questions List
+              Card(
+                elevation: 5,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(15),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        LSUColors.purple.withOpacity(0.1),
+                        LSUColors.purple.withOpacity(0.05),
+                      ],
                     ),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(20.0),
+                    padding: EdgeInsets.all(20),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: LSUColors.purple,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                'Question ${currentQuestionIndex + 1}',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            if (questionAnswered[currentQuestionIndex])
-                              Container(
-                                padding: EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: LSUColors.lightGold,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  Icons.check,
-                                  color: LSUColors.gold,
-                                  size: 20,
-                                ),
-                              ),
-                          ],
-                        ),
-                        SizedBox(height: 16),
                         Text(
-                          currentQuestion.questionText,
+                          'Questions',
                           style: TextStyle(
-                            fontSize: 18,
-                            height: 1.4,
-                            color: Colors.black87,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: 24),
-                if (!questionAnswered[currentQuestionIndex])
-                  Container(
-                    width: 280,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: TextField(
-                      controller: answerController,
-                      decoration: InputDecoration(
-                        hintText: 'Type your answer here',
-                        filled: true,
-                        fillColor: Colors.white,
-                        prefixIcon: Icon(Icons.search, color: LSUColors.purple),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide:
-                              BorderSide(color: LSUColors.purple, width: 2),
-                        ),
-                        contentPadding:
-                            EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-                      ),
-                      style: TextStyle(fontSize: 16),
-                      textCapitalization: TextCapitalization.sentences,
-                      textInputAction: TextInputAction.done,
-                      onSubmitted: (_) => submitAnswer(),
-                    ),
-                  ),
-                SizedBox(height: 16),
-                if (!questionAnswered[currentQuestionIndex])
-                  ElevatedButton.icon(
-                    onPressed: submitAnswer,
-                    icon: Icon(Icons.check_circle_outline),
-                    label: Text('Submit Answer'),
-                    style: ElevatedButton.styleFrom(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      minimumSize: Size(280, 48),
-                    ),
-                  ),
-                if (questionAnswered[currentQuestionIndex])
-                  Container(
-                    margin: EdgeInsets.only(top: 16),
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: Colors.green,
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.check_circle,
-                          color: Colors.green,
-                          size: 20,
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          'Correct! Question completed',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.green,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                if (feedbackMessage.contains('Incorrect'))
-                  Container(
-                    margin: EdgeInsets.only(top: 16),
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: Colors.red,
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.error,
-                          color: Colors.red,
-                          size: 18,
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          feedbackMessage,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.red,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                SizedBox(height: 24),
-                Container(
-                  margin: EdgeInsets.only(top: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        onPressed:
-                            currentQuestionIndex > 0 ? previousQuestion : null,
-                        icon: Icon(Icons.arrow_back_ios),
-                        color: currentQuestionIndex > 0
-                            ? LSUColors.purple
-                            : Colors.grey,
-                        tooltip: 'Previous',
-                      ),
-                      Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: LSUColors.purple.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          '${currentQuestionIndex + 1} / ${questions.length}',
-                          style: TextStyle(
+                            fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: LSUColors.purple,
                           ),
                         ),
-                      ),
-                      IconButton(
-                        onPressed: currentQuestionIndex < questions.length - 1
-                            ? nextQuestion
-                            : null,
-                        icon: Icon(Icons.arrow_forward_ios),
-                        color: currentQuestionIndex < questions.length - 1
-                            ? LSUColors.purple
-                            : Colors.grey,
-                        tooltip: 'Next',
-                      ),
-                    ],
+                        SizedBox(height: 20),
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: questions.length,
+                          itemBuilder: (context, index) {
+                            return Card(
+                              margin: EdgeInsets.only(bottom: 10),
+                              child: ListTile(
+                                title: Text(
+                                  'Question ${index + 1}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: LSUColors.purple,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  questions[index].questionText,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                trailing: questionAnswered[index]
+                                    ? Icon(Icons.check_circle, color: Colors.green)
+                                    : Icon(Icons.arrow_forward_ios, color: LSUColors.purple),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => QuestionDetailScreen(
+                                        question: questions[index],
+                                        questionNumber: index + 1,
+                                        onAnswered: (bool isCorrect) {
+                                          if (isCorrect && !questionAnswered[index]) {
+                                            setState(() {
+                                              questionAnswered[index] = true;
+                                              revealNextLetter();
+                                            });
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                Divider(height: 40, color: Colors.grey.shade300),
-                Container(
-                  padding: EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                  decoration: BoxDecoration(
-                    color: LSUColors.purple.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        'Know the Secret Word?',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: LSUColors.purple,
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                      SizedBox(
-                        width: 280,
-                        child: TextField(
-                          controller: wordGuessController,
-                          decoration: InputDecoration(
-                            hintText: 'Enter the secret word',
-                            filled: true,
-                            fillColor: Colors.white,
-                            prefixIcon:
-                                Icon(Icons.vpn_key, color: LSUColors.gold),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide:
-                                  BorderSide(color: LSUColors.gold, width: 2),
-                            ),
-                          ),
-                          textCapitalization: TextCapitalization.characters,
-                          textInputAction: TextInputAction.done,
-                          onSubmitted: (_) => submitWordGuess(),
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                      ElevatedButton.icon(
-                        onPressed: submitWordGuess,
-                        icon: Icon(Icons.lock_open),
-                        label: Text('Submit Word'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: LSUColors.gold,
-                          foregroundColor: LSUColors.purple,
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 12),
-                          minimumSize: Size(280, 48),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -870,4 +442,306 @@ class Question {
     required this.questionText,
     required this.correctAnswer,
   });
+}
+
+class QuestionDetailScreen extends StatefulWidget {
+  final Question question;
+  final int questionNumber;
+  final Function(bool) onAnswered;
+
+  const QuestionDetailScreen({
+    super.key,
+    required this.question,
+    required this.questionNumber,
+    required this.onAnswered,
+  });
+
+  @override
+  _QuestionDetailScreenState createState() => _QuestionDetailScreenState();
+}
+
+class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
+  final TextEditingController answerController = TextEditingController();
+  String feedbackMessage = '';
+  bool isAnswered = false;
+
+  void submitAnswer() {
+    String userAnswer = answerController.text.trim().toLowerCase();
+    String correctAnswer = widget.question.correctAnswer.toLowerCase();
+
+    if (userAnswer == correctAnswer) {
+      setState(() {
+        isAnswered = true;
+        feedbackMessage = 'Correct!';
+      });
+      widget.onAnswered(true);
+    } else {
+      setState(() {
+        feedbackMessage = 'Incorrect! Try again.';
+      });
+    }
+
+    answerController.clear();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Question ${widget.questionNumber}'),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.white, LSUColors.lightGold.withOpacity(0.3)],
+          ),
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Card(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text(
+                    widget.question.questionText,
+                    style: TextStyle(
+                      fontSize: 18,
+                      height: 1.4,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+              if (!isAnswered) ...[
+                TextField(
+                  controller: answerController,
+                  decoration: InputDecoration(
+                    hintText: 'Type your answer here',
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: LSUColors.purple, width: 2),
+                    ),
+                  ),
+                  onSubmitted: (_) => submitAnswer(),
+                ),
+                SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: submitAnswer,
+                  child: Text('Submit Answer'),
+                ),
+              ],
+              if (feedbackMessage.isNotEmpty)
+                Container(
+                  margin: EdgeInsets.only(top: 16),
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: feedbackMessage.contains('Correct')
+                        ? Colors.green.withOpacity(0.1)
+                        : Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: feedbackMessage.contains('Correct')
+                          ? Colors.green
+                          : Colors.red,
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    feedbackMessage,
+                    style: TextStyle(
+                      color: feedbackMessage.contains('Correct')
+                          ? Colors.green
+                          : Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class WordGuessScreen extends StatefulWidget {
+  final String secretWord;
+  final List<bool> revealedLetters;
+
+  const WordGuessScreen({
+    super.key,
+    required this.secretWord,
+    required this.revealedLetters,
+  });
+
+  @override
+  _WordGuessScreenState createState() => _WordGuessScreenState();
+}
+
+class _WordGuessScreenState extends State<WordGuessScreen> {
+  final TextEditingController guessController = TextEditingController();
+  String feedbackMessage = '';
+  bool isCorrect = false;
+
+  void submitGuess() {
+    String guess = guessController.text.trim().toUpperCase();
+    if (guess == widget.secretWord) {
+      setState(() {
+        isCorrect = true;
+        feedbackMessage = 'Congratulations! You got it right!';
+      });
+    } else {
+      setState(() {
+        feedbackMessage = 'Try again!';
+      });
+    }
+    guessController.clear();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Guess the Word'),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.white, LSUColors.lightGold.withOpacity(0.3)],
+          ),
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Current Progress',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: LSUColors.purple,
+                ),
+              ),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  widget.secretWord.length,
+                  (index) => Container(
+                    margin: EdgeInsets.symmetric(horizontal: 4),
+                    width: 40,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: widget.secretWord[index] != ' '
+                          ? (widget.revealedLetters[index]
+                              ? LSUColors.lightGold
+                              : Colors.white)
+                          : Colors.transparent,
+                      border: Border.all(
+                        color: widget.secretWord[index] == ' '
+                            ? Colors.transparent
+                            : (widget.revealedLetters[index]
+                                ? LSUColors.gold
+                                : LSUColors.purple.withOpacity(0.3)),
+                        width: widget.revealedLetters[index] ? 2 : 1,
+                      ),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Center(
+                      child: widget.secretWord[index] == ' '
+                          ? SizedBox(width: 16)
+                          : (widget.revealedLetters[index]
+                              ? Text(
+                                  widget.secretWord[index],
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: LSUColors.purple,
+                                  ),
+                                )
+                              : Text('')),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 40),
+              if (!isCorrect) ...[
+                TextField(
+                  controller: guessController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter your guess',
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: LSUColors.purple, width: 2),
+                    ),
+                  ),
+                  textCapitalization: TextCapitalization.characters,
+                  onSubmitted: (_) => submitGuess(),
+                ),
+                SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: submitGuess,
+                  child: Text('Submit Guess'),
+                ),
+              ],
+              if (feedbackMessage.isNotEmpty)
+                Container(
+                  margin: EdgeInsets.only(top: 16),
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: feedbackMessage.contains('Congratulations')
+                        ? Colors.green.withOpacity(0.1)
+                        : Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: feedbackMessage.contains('Congratulations')
+                          ? Colors.green
+                          : Colors.red,
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    feedbackMessage,
+                    style: TextStyle(
+                      color: feedbackMessage.contains('Congratulations')
+                          ? Colors.green
+                          : Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
