@@ -74,8 +74,25 @@ class HomeScreen extends StatelessWidget {
               // Add LSU logo
               Image.asset(
                 'Assets/LSU.png',
-                width: 300, // Adjust the width as needed
-                height: 300, // Adjust the height as needed
+                width: MediaQuery.of(context).size.width * 0.8,
+                height: MediaQuery.of(context).size.width * 0.8,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: MediaQuery.of(context).size.width * 0.8,
+                    height: MediaQuery.of(context).size.width * 0.8,
+                    color: Colors.grey[200],
+                    child: Center(
+                      child: Text(
+                        'LSU Logo',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 20,
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
               SizedBox(height: 20),
               Text(
