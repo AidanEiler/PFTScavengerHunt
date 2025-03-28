@@ -1,0 +1,2 @@
+C:/Users/DaUlt/OneDrive/Documents/VSCode/PFTScavengerHunt/scavengerhunt/android/app/.cxx/Debug/a352l2h1/x86/CMakeFiles/edit_cache.dir
+C:/Users/DaUlt/OneDrive/Documents/VSCode/PFTScavengerHunt/scavengerhunt/android/app/.cxx/Debug/a352l2h1/x86/CMakeFiles/rebuild_cache.dir
