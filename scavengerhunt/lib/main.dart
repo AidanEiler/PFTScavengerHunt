@@ -3,10 +3,40 @@ import 'package:flutter/material.dart';
 void main() => runApp(MyApp());
 
 class LSUColors {
-  static const Color purple = Color(0xFF461D7C);
-  static const Color gold = Color(0xFFFDD023);
-  static const Color lightGold = Color(0xFFD29F13);
-  static const Color darkPurple = Color(0xFF2D1250);
+  // Primary Colors
+  static const Color purple =
+      Color(0xFF461D7C); // Official LSU Purple - Pantone 268c/268u
+  static const Color gold =
+      Color(0xFFFDD023); // Official LSU Gold - Pantone 123c/115u
+
+  // Tonal Palette
+  static const Color corporatePurple =
+      Color(0xFF3C1053); // Corporate Purple - Pantone 2627c/269u
+  static const Color lightPurple =
+      Color(0xFFA39AAC); // Light Purple - Pantone 7660c/7660u
+  static const Color corporateGold =
+      Color(0xFFD29F13); // Corporate Gold - Pantone 7555c/7555u
+  static const Color lightGold =
+      Color(0xFFF1EED8); // Light Gold - No solid version
+
+  // Neutral Palette
+  static const Color lightGray =
+      Color(0xFFD0D0CE); // Light Gray - Pantone Cool Gray 2c/2u
+  static const Color gray =
+      Color(0xFF999999); // 50% Gray - Pantone Cool Gray 8c/8u
+  static const Color black = Color(0xFF333333); // Process Black
+  static const Color metallicGold =
+      Color(0xFFAA8A3C); // Approximation of Pantone 872 (Metallic)
+}
+
+class Question {
+  final String questionText;
+  final String correctAnswer;
+
+  Question({
+    required this.questionText,
+    required this.correctAnswer,
+  });
 }
 
 class MyApp extends StatelessWidget {
@@ -18,15 +48,18 @@ class MyApp extends StatelessWidget {
       title: 'PFT Code Cracker',
       theme: ThemeData(
         primaryColor: LSUColors.purple,
-        scaffoldBackgroundColor: Colors.white,
+        scaffoldBackgroundColor: LSUColors.purple,
         colorScheme: ColorScheme.fromSwatch().copyWith(
           primary: LSUColors.purple,
           secondary: LSUColors.gold,
+          tertiary: LSUColors.corporatePurple,
+          background: LSUColors.purple,
+          surface: LSUColors.lightGray,
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: LSUColors.purple,
-            foregroundColor: Colors.white,
+            backgroundColor: LSUColors.gold,
+            foregroundColor: LSUColors.purple,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8.0),
             ),
@@ -34,16 +67,105 @@ class MyApp extends StatelessWidget {
         ),
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
-            foregroundColor: LSUColors.purple,
+            foregroundColor: LSUColors.gold,
           ),
         ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: LSUColors.purple,
-          foregroundColor: Colors.white,
+        cardTheme: CardTheme(
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+          ),
         ),
         fontFamily: 'Roboto',
       ),
-      home: const HomeScreen(),
+      home: MainNavigationScreen(),
+    );
+  }
+}
+
+class MainNavigationScreen extends StatefulWidget {
+  @override
+  _MainNavigationScreenState createState() => _MainNavigationScreenState();
+}
+
+class _MainNavigationScreenState extends State<MainNavigationScreen> {
+  int _currentIndex = 0;
+  final List<Widget> _screens = [
+    HomeScreen(),
+    GameScreen(),
+    WordGuessDirectScreen(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _screens[_currentIndex],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: LSUColors.purple,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 8,
+              offset: Offset(0, -2),
+            ),
+          ],
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          backgroundColor: LSUColors.purple,
+          selectedItemColor: LSUColors.gold,
+          unselectedItemColor: Colors.white.withOpacity(0.6),
+          selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.screen_search_desktop_rounded),
+              label: 'Title Screen',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.lock_outline),
+              label: 'Guess Secret',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class WordGuessDirectScreen extends StatefulWidget {
+  const WordGuessDirectScreen({super.key});
+
+  @override
+  _WordGuessDirectScreenState createState() => _WordGuessDirectScreenState();
+}
+
+class _WordGuessDirectScreenState extends State<WordGuessDirectScreen> {
+  final String secretWord = "DR SHEPHERD";
+  List<bool> revealedLetters = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize all letters as revealed for direct access to the answer screen
+    revealedLetters = List.generate(secretWord.length, (index) => true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return WordGuessScreen(
+      secretWord: secretWord,
+      revealedLetters: revealedLetters,
+      showAppBar: false,
     );
   }
 }
@@ -54,111 +176,106 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('PFT Code Cracker'),
-        elevation: 0,
-      ),
-      body: Container(
-        color: LSUColors.lightGold,
-        width: double.infinity,
-        height: double.infinity,
+      backgroundColor: LSUColors.purple,
+      body: SafeArea(
         child: SingleChildScrollView(
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 10),
-                  // Add LSU logo
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.6,
-                    child: AspectRatio(
-                      aspectRatio: 1,
-                      child: Image.asset(
-                        'Assets/LSU.png',
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[200],
-                            child: Center(
-                              child: Text(
-                                'LSU Logo',
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 20,
-                                ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                // LSU logo without white circle
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.6,
+                  child: AspectRatio(
+                    aspectRatio: 1,
+                    child: Image.asset(
+                      'Assets/LSU.png',
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: LSUColors.purple,
+                          child: Center(
+                            child: Text(
+                              'LSU Logo',
+                              style: TextStyle(
+                                color: LSUColors.gold,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                    child: Text(
-                      'PFT Code Cracker',
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: LSUColors.purple,
-                        letterSpacing: 1.2,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
-                    child: Text(
-                      'Explore what LSU has to offer for prospective engineers!',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: LSUColors.darkPurple,
-                        height: 1.5,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  const SizedBox(height: 40),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const GameScreen()),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 32, vertical: 12),
-                      elevation: 3,
-                      minimumSize: const Size(180, 48),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      shadowColor: Colors.black38,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Text(
-                          'Start Game',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
                           ),
-                        ),
-                        SizedBox(width: 8),
-                        Icon(Icons.arrow_forward, size: 18),
-                      ],
+                        );
+                      },
                     ),
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 30),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Text(
+                    'PFT Code Cracker',
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: LSUColors.gold,
+                      letterSpacing: 1.2,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(
+                    'Explore what LSU has to offer for prospective engineers!',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 60),
+                ElevatedButton(
+                  onPressed: () {
+                    // Navigate to Game tab
+                    (context.findAncestorStateOfType<
+                            _MainNavigationScreenState>())
+                        ?.setState(() {
+                      (context.findAncestorStateOfType<
+                              _MainNavigationScreenState>())
+                          ?._currentIndex = 1;
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 16),
+                    elevation: 5,
+                    minimumSize: const Size(220, 56),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    shadowColor: Colors.black.withOpacity(0.5),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Text(
+                        'START GAME',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                      SizedBox(width: 12),
+                      Icon(Icons.play_arrow, size: 24),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -252,32 +369,37 @@ class _GameScreenState extends State<GameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('PFT Code Cracker'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: Container(
-        color: Colors.white,
+      backgroundColor: Colors.white,
+      body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 30, 16, 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Page Title
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: Text(
+                  'PFT Code Cracker',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: LSUColors.purple,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
               // Secret Word Display
               GestureDetector(
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => WordGuessScreen(
-                        secretWord: secretWord,
-                        revealedLetters: revealedLetters,
-                      ),
-                    ),
-                  );
+                  // Navigate directly to the Answer tab
+                  (context.findAncestorStateOfType<
+                          _MainNavigationScreenState>())
+                      ?.setState(() {
+                    (context.findAncestorStateOfType<
+                            _MainNavigationScreenState>())
+                        ?._currentIndex = 2;
+                  });
                 },
                 child: Card(
                   elevation: 5,
@@ -285,10 +407,20 @@ class _GameScreenState extends State<GameScreen> {
                     borderRadius: BorderRadius.circular(15),
                   ),
                   child: Container(
-                    color: LSUColors.gold.withOpacity(0.1),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          LSUColors.gold.withOpacity(0.1),
+                          LSUColors.gold.withOpacity(0.3),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 16),
+                          horizontal: 16, vertical: 20),
                       child: Column(
                         children: [
                           const Text(
@@ -296,10 +428,10 @@ class _GameScreenState extends State<GameScreen> {
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
-                              color: LSUColors.gold,
+                              color: LSUColors.purple,
                             ),
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 24),
                           LayoutBuilder(
                             builder: (context, constraints) {
                               double tileWidth = (constraints.maxWidth -
@@ -319,19 +451,29 @@ class _GameScreenState extends State<GameScreen> {
                                     decoration: BoxDecoration(
                                       color: secretWord[index] != ' '
                                           ? (revealedLetters[index]
-                                              ? LSUColors.lightGold
+                                              ? LSUColors.gold
                                               : Colors.white)
                                           : Colors.transparent,
                                       border: Border.all(
                                         color: secretWord[index] == ' '
                                             ? Colors.transparent
                                             : (revealedLetters[index]
-                                                ? LSUColors.gold
+                                                ? LSUColors.corporateGold
                                                 : LSUColors.purple
                                                     .withOpacity(0.3)),
                                         width: revealedLetters[index] ? 2 : 1,
                                       ),
                                       borderRadius: BorderRadius.circular(6),
+                                      boxShadow: revealedLetters[index]
+                                          ? [
+                                              BoxShadow(
+                                                color: LSUColors.corporateGold
+                                                    .withOpacity(0.3),
+                                                blurRadius: 4,
+                                                offset: Offset(0, 2),
+                                              )
+                                            ]
+                                          : null,
                                     ),
                                     child: Center(
                                       child: secretWord[index] == ' '
@@ -340,7 +482,7 @@ class _GameScreenState extends State<GameScreen> {
                                               ? Text(
                                                   secretWord[index],
                                                   style: const TextStyle(
-                                                    fontSize: 16,
+                                                    fontSize: 18,
                                                     fontWeight: FontWeight.bold,
                                                     color: LSUColors.purple,
                                                   ),
@@ -352,12 +494,21 @@ class _GameScreenState extends State<GameScreen> {
                               );
                             },
                           ),
-                          const SizedBox(height: 10),
-                          const Text(
-                            'Tap to guess the word',
-                            style: TextStyle(
-                              color: LSUColors.darkPurple,
-                              fontSize: 14,
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: LSUColors.lightPurple.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text(
+                              'Tap to view answer',
+                              style: TextStyle(
+                                color: LSUColors.corporatePurple,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
                         ],
@@ -366,7 +517,7 @@ class _GameScreenState extends State<GameScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               // Questions List
               Card(
                 elevation: 5,
@@ -374,10 +525,20 @@ class _GameScreenState extends State<GameScreen> {
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Container(
-                  color: LSUColors.purple.withOpacity(0.1),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        LSUColors.purple.withOpacity(0.05),
+                        LSUColors.purple.withOpacity(0.15),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 16),
+                        horizontal: 16, vertical: 20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -397,24 +558,52 @@ class _GameScreenState extends State<GameScreen> {
                           itemBuilder: (context, index) {
                             return Card(
                               margin: const EdgeInsets.only(bottom: 10),
+                              elevation: 2,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                               child: ListTile(
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 8),
                                 title: Text(
                                   'Question ${index + 1}',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: LSUColors.purple,
+                                    fontSize: 16,
                                   ),
                                 ),
-                                subtitle: Text(
-                                  questions[index].questionText,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
+                                subtitle: Padding(
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: Text(
+                                    questions[index].questionText,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: LSUColors.black.withOpacity(0.8),
+                                    ),
+                                  ),
                                 ),
                                 trailing: questionAnswered[index]
-                                    ? const Icon(Icons.check_circle,
-                                        color: Colors.green)
-                                    : const Icon(Icons.arrow_forward_ios,
-                                        color: LSUColors.purple),
+                                    ? Container(
+                                        padding: EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.green.withOpacity(0.1),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(Icons.check,
+                                            color: Colors.green, size: 20))
+                                    : Container(
+                                        padding: EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color:
+                                              LSUColors.gold.withOpacity(0.2),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                            Icons.arrow_forward_ios,
+                                            color: LSUColors.corporateGold,
+                                            size: 16)),
                                 onTap: () {
                                   Navigator.push(
                                     context,
@@ -451,16 +640,6 @@ class _GameScreenState extends State<GameScreen> {
       ),
     );
   }
-}
-
-class Question {
-  final String questionText;
-  final String correctAnswer;
-
-  Question({
-    required this.questionText,
-    required this.correctAnswer,
-  });
 }
 
 class QuestionDetailScreen extends StatefulWidget {
@@ -506,76 +685,132 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('Question ${widget.questionNumber}'),
+        backgroundColor: LSUColors.purple,
+        title: Text(
+          'Question ${widget.questionNumber}',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: LSUColors.gold,
+          ),
+        ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: LSUColors.gold),
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Container(
-        color: Colors.white,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Text(
-                        widget.question.questionText,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          height: 1.4,
-                          color: Colors.black87,
-                        ),
-                      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Card(
+              elevation: 3,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.white,
+                      LSUColors.lightPurple.withOpacity(0.1),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Text(
+                    widget.question.questionText,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      height: 1.5,
+                      color: LSUColors.black,
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  if (!isAnswered) ...[
-                    TextField(
-                      controller: answerController,
-                      decoration: InputDecoration(
-                        hintText: 'Type your answer here',
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(
-                              color: LSUColors.purple, width: 2),
-                        ),
-                      ),
-                      onSubmitted: (_) => submitAnswer(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 30),
+            if (!isAnswered) ...[
+              TextField(
+                controller: answerController,
+                decoration: InputDecoration(
+                  hintText: 'Type your answer here',
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: LSUColors.lightGray),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: LSUColors.lightGray),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(
+                        color: LSUColors.corporateGold, width: 2),
+                  ),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                ),
+                style: TextStyle(fontSize: 16),
+                onSubmitted: (_) => submitAnswer(),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: submitAnswer,
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  elevation: 3,
+                ),
+                child: const Text(
+                  'Submit Answer',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+            if (feedbackMessage.isNotEmpty)
+              Container(
+                margin: const EdgeInsets.only(top: 24),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: BoxDecoration(
+                  color: feedbackMessage.contains('Correct')
+                      ? Colors.green.withOpacity(0.1)
+                      : Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: feedbackMessage.contains('Correct')
+                        ? Colors.green
+                        : Colors.red,
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      feedbackMessage.contains('Correct')
+                          ? Icons.check_circle
+                          : Icons.error,
+                      color: feedbackMessage.contains('Correct')
+                          ? Colors.green
+                          : Colors.red,
+                      size: 24,
                     ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: submitAnswer,
-                      child: const Text('Submit Answer'),
-                    ),
-                  ],
-                  if (feedbackMessage.isNotEmpty)
-                    Container(
-                      margin: const EdgeInsets.only(top: 16),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: feedbackMessage.contains('Correct')
-                            ? Colors.green.withOpacity(0.1)
-                            : Colors.red.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: feedbackMessage.contains('Correct')
-                              ? Colors.green
-                              : Colors.red,
-                          width: 1,
-                        ),
-                      ),
+                    SizedBox(width: 12),
+                    Expanded(
                       child: Text(
                         feedbackMessage,
                         style: TextStyle(
@@ -583,14 +818,35 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                               ? Colors.green
                               : Colors.red,
                           fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
-                        textAlign: TextAlign.center,
                       ),
                     ),
-                ],
-              );
-            },
-          ),
+                  ],
+                ),
+              ),
+            if (isAnswered) ...[
+              const SizedBox(height: 40),
+              OutlinedButton(
+                onPressed: () => Navigator.pop(context),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: LSUColors.purple, width: 1.5),
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text(
+                  'Return to Questions',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: LSUColors.purple,
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
@@ -600,11 +856,13 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
 class WordGuessScreen extends StatefulWidget {
   final String secretWord;
   final List<bool> revealedLetters;
+  final bool showAppBar;
 
   const WordGuessScreen({
     super.key,
     required this.secretWord,
     required this.revealedLetters,
+    this.showAppBar = true,
   });
 
   @override
@@ -625,19 +883,26 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
         height: tileWidth * 1.2,
         decoration: BoxDecoration(
           color: widget.secretWord[index] != ' '
-              ? (widget.revealedLetters[index]
-                  ? LSUColors.lightGold
-                  : Colors.white)
+              ? (widget.revealedLetters[index] ? LSUColors.gold : Colors.white)
               : Colors.transparent,
           border: Border.all(
             color: widget.secretWord[index] == ' '
                 ? Colors.transparent
                 : (widget.revealedLetters[index]
-                    ? LSUColors.gold
+                    ? LSUColors.corporateGold
                     : LSUColors.purple.withOpacity(0.3)),
             width: widget.revealedLetters[index] ? 2 : 1,
           ),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: widget.revealedLetters[index]
+              ? [
+                  BoxShadow(
+                    color: LSUColors.corporateGold.withOpacity(0.3),
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  )
+                ]
+              : null,
         ),
         child: Center(
           child: widget.secretWord[index] == ' '
@@ -646,7 +911,7 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                   ? Text(
                       widget.secretWord[index],
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: LSUColors.purple,
                       ),
@@ -675,103 +940,369 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Guess the Word'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: Container(
-        color: Colors.white,
+      backgroundColor: Colors.white,
+      appBar: widget.showAppBar
+          ? AppBar(
+              backgroundColor: LSUColors.purple,
+              title: const Text(
+                'Secret Word',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: LSUColors.gold,
+                ),
+              ),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: LSUColors.gold),
+                onPressed: () => Navigator.pop(context),
+              ),
+            )
+          : null,
+      body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+          padding: const EdgeInsets.all(16),
           child: SingleChildScrollView(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  'Current Progress',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: LSUColors.purple,
+                if (!widget.showAppBar) ...[
+                  Text(
+                    'Secret Word',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: LSUColors.purple,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                ),
-                const SizedBox(height: 20),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    // Calculate a smaller fixed tile width to ensure all characters fit on one line
-                    // For "DR SHEPHERD" which is 10 characters plus spacing
-                    double availableWidth =
-                        constraints.maxWidth - 24; // Account for padding
-                    double tileWidth =
-                        (availableWidth / widget.secretWord.length) -
-                            4; // 4 for the margin
-
-                    // Set a maximum tile width to prevent them from being too large
-                    tileWidth = tileWidth > 30 ? 30 : tileWidth;
-
-                    return SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: _buildLetterTiles(tileWidth),
+                  SizedBox(height: 20),
+                ],
+                Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          LSUColors.purple.withOpacity(0.05),
+                          LSUColors.purple.withOpacity(0.12),
+                        ],
                       ),
-                    );
-                  },
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      children: [
+                        const Text(
+                          'DR SHEPHERD',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: LSUColors.purple,
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            // Calculate a smaller fixed tile width to ensure all characters fit on one line
+                            double availableWidth = constraints.maxWidth -
+                                24; // Account for padding
+                            double tileWidth =
+                                (availableWidth / widget.secretWord.length) -
+                                    4; // 4 for the margin
+
+                            // Set a maximum tile width to prevent them from being too large
+                            tileWidth = tileWidth > 30 ? 30 : tileWidth;
+
+                            return SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: _buildLetterTiles(tileWidth),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 40),
-                if (!isCorrect) ...[
-                  TextField(
-                    controller: guessController,
-                    decoration: InputDecoration(
-                      hintText: 'Enter your guess',
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide:
-                            const BorderSide(color: LSUColors.purple, width: 2),
-                      ),
+                if (!isCorrect &&
+                    !widget.revealedLetters.every((element) => element)) ...[
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: LSUColors.lightGray),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 6,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    textCapitalization: TextCapitalization.characters,
-                    onSubmitted: (_) => submitGuess(),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: submitGuess,
-                    child: const Text('Submit Guess'),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Text(
+                            'Enter your guess for the secret word:',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: LSUColors.corporatePurple,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        Divider(height: 1, color: LSUColors.lightGray),
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: TextField(
+                            controller: guessController,
+                            decoration: InputDecoration(
+                              hintText: 'Type word here...',
+                              filled: true,
+                              fillColor: LSUColors.lightGray.withOpacity(0.2),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide.none,
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: LSUColors.gold,
+                                  width: 2,
+                                ),
+                              ),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
+                              suffixIcon: IconButton(
+                                icon: Icon(Icons.clear, color: LSUColors.gray),
+                                onPressed: () => guessController.clear(),
+                              ),
+                            ),
+                            style: TextStyle(
+                              fontSize: 16,
+                              letterSpacing: 1.0,
+                            ),
+                            textCapitalization: TextCapitalization.characters,
+                            textAlign: TextAlign.center,
+                            onSubmitted: (_) => submitGuess(),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 16,
+                            right: 16,
+                            bottom: 16,
+                          ),
+                          child: ElevatedButton(
+                            onPressed: submitGuess,
+                            style: ElevatedButton.styleFrom(
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              minimumSize: Size(double.infinity, 48),
+                            ),
+                            child: const Text(
+                              'SUBMIT GUESS',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.0,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
-                if (feedbackMessage.isNotEmpty)
+                if (widget.revealedLetters.every((element) => element) &&
+                    !isCorrect) ...[
                   Container(
-                    margin: const EdgeInsets.only(top: 16),
-                    padding: const EdgeInsets.all(16),
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: feedbackMessage.contains('Congratulations')
-                          ? Colors.green.withOpacity(0.1)
-                          : Colors.red.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      color: LSUColors.purple.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: LSUColors.purple, width: 1.5),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          'The answer to the puzzle is "DR SHEPHERD".',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: LSUColors.purple,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          'Continue exploring the building to answer all the questions!',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: LSUColors.corporatePurple,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        if (!widget.showAppBar) ...[
+                          SizedBox(height: 24),
+                          ElevatedButton(
+                            onPressed: () {
+                              // Navigate to Game tab
+                              (context.findAncestorStateOfType<
+                                      _MainNavigationScreenState>())
+                                  ?.setState(() {
+                                (context.findAncestorStateOfType<
+                                        _MainNavigationScreenState>())
+                                    ?._currentIndex = 1;
+                              });
+                            },
+                            child: Text(
+                              'GO TO GAME',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+                if (isCorrect) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.green, width: 1.5),
+                    ),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
+                          size: 48,
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          'Congratulations!',
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 24,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'You guessed the secret word correctly!',
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontSize: 16,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 24),
+                        if (widget.showAppBar) ...[
+                          OutlinedButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(color: Colors.green, width: 1.5),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: Text(
+                              'Return to Game',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.green,
+                              ),
+                            ),
+                          ),
+                        ] else ...[
+                          ElevatedButton(
+                            onPressed: () {
+                              // Navigate to Game tab
+                              (context.findAncestorStateOfType<
+                                      _MainNavigationScreenState>())
+                                  ?.setState(() {
+                                (context.findAncestorStateOfType<
+                                        _MainNavigationScreenState>())
+                                    ?._currentIndex = 1;
+                              });
+                            },
+                            child: Text(
+                              'GO TO GAME',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+                if (feedbackMessage.isNotEmpty &&
+                    !isCorrect &&
+                    !widget.revealedLetters.every((element) => element))
+                  Container(
+                    margin: const EdgeInsets.only(top: 24),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: feedbackMessage.contains('Congratulations')
-                            ? Colors.green
-                            : Colors.red,
+                        color: Colors.red,
                         width: 1,
                       ),
                     ),
-                    child: Text(
-                      feedbackMessage,
-                      style: TextStyle(
-                        color: feedbackMessage.contains('Congratulations')
-                            ? Colors.green
-                            : Colors.red,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.error,
+                          color: Colors.red,
+                          size: 24,
+                        ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'That\'s not right. Try again!',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
               ],
