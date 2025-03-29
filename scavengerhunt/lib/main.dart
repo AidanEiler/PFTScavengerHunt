@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // Remove debug banner
+      debugShowCheckedModeBanner: false,
       title: 'PFT Code Cracker',
       theme: ThemeData(
         primaryColor: LSUColors.purple,
@@ -92,24 +92,22 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Map<int, bool> questionAnswered = {};
   // Define which letter is unlocked by each question (0-based index)
   final Map<int, int> questionToLetterMap = {
-    0: 8, // Question 1 (previously 9) unlocks R
-    1: 0, // Question 2 (previously 1) unlocks D
-    2: 1, // Question 3 (previously 2) unlocks R
-    3: 2, // Question 4 (previously 3) unlocks S
-    4: 3, // Question 5 (previously 4) unlocks H
-    5: 4, // Question 6 (previously 5) unlocks E
-    6: 5, // Question 7 (previously 6) unlocks P
-    7: 6, // Question 8 (previously 7) unlocks H
-    8: 7, // Question 9 (previously 8) unlocks E
-    9: 9, // Question 10 unlocks D
+    0: 8,
+    1: 0,
+    2: 1,
+    3: 2,
+    4: 3,
+    5: 4,
+    6: 5,
+    7: 6,
+    8: 7,
+    9: 9,
   };
 
   @override
   void initState() {
     super.initState();
-    // Initialize the revealed letters state
     revealedLetters = List.generate(secretWord.length, (index) => false);
-    // Initialize all questions as unanswered
     for (int i = 0; i < 10; i++) {
       questionAnswered[i] = false;
     }
@@ -134,7 +132,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Create screens with the current state
     final List<Widget> screens = [
       HomeScreen(),
       GameScreen(
@@ -233,7 +230,6 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
-                // Title text directly without yellow container box
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -383,10 +379,8 @@ class _GameScreenState extends State<GameScreen> {
     ),
   ];
 
-  // Build letter tile for secret word display
   Widget buildLetterTile(String letter, bool isRevealed) {
-    // Make tiles bigger by 3 pixels
-    double tileWidth = 29; // Increased from 26
+    double tileWidth = 29;
 
     return Container(
       width: tileWidth,
@@ -416,7 +410,7 @@ class _GameScreenState extends State<GameScreen> {
             ? Text(
                 letter,
                 style: const TextStyle(
-                  fontSize: 17, // Increased from 14
+                  fontSize: 17,
                   fontWeight: FontWeight.bold,
                   color: LSUColors.gold,
                   fontFamily: 'ProximaNova',
@@ -434,14 +428,13 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Force navigation to Guess Secret screen if all letters are revealed
     if (widget.revealedLetters.every((element) => element)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final mainNav =
             context.findAncestorStateOfType<_MainNavigationScreenState>();
         if (mainNav != null && mainNav._currentIndex != 2) {
           mainNav.setState(() {
-            mainNav._currentIndex = 2; // Go to Guess Secret screen
+            mainNav._currentIndex = 2;
           });
         }
       });
@@ -514,8 +507,6 @@ class _GameScreenState extends State<GameScreen> {
                             ),
                           ),
                           const SizedBox(height: 12),
-
-                          // Single row for DR SHEPHERD
                           Center(
                             child: SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
@@ -547,7 +538,6 @@ class _GameScreenState extends State<GameScreen> {
                               ),
                             ),
                           ),
-                          // Purple "Tap to guess the word" button removed
                         ],
                       ),
                     ),
@@ -604,7 +594,6 @@ class _GameScreenState extends State<GameScreen> {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  // Changed from green to LSU light grey for answered questions
                                   color: isAnswered
                                       ? LSUColors.lightGray
                                       : LSUColors.lightGold,
@@ -794,8 +783,8 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      LSUColors.lightGold,
-                      LSUColors.lightPurple.withOpacity(0.1),
+                      LSUColors.gold,
+                      LSUColors.gold,
                     ],
                   ),
                   borderRadius: BorderRadius.circular(12),
@@ -807,7 +796,7 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                     style: const TextStyle(
                       fontSize: 18,
                       height: 1.5,
-                      color: LSUColors.black,
+                      color: LSUColors.purple,
                       fontFamily: 'ProximaNova',
                     ),
                   ),
@@ -1016,8 +1005,7 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
 
   // Build letter tile for secret word display
   Widget buildLetterTile(String letter, bool isRevealed) {
-    // Make tiles bigger by 3 pixels
-    double tileWidth = 29; // Increased from 26
+    double tileWidth = 29;
 
     return Container(
       width: tileWidth,
@@ -1047,7 +1035,7 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
             ? Text(
                 letter,
                 style: const TextStyle(
-                  fontSize: 17, // Increased from 14
+                  fontSize: 17,
                   fontWeight: FontWeight.bold,
                   color: LSUColors.gold,
                   fontFamily: 'ProximaNova',
@@ -1115,15 +1103,13 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
           : null,
       body: SafeArea(
         child: SingleChildScrollView(
-          // Using the exact same padding as GameScreen
           padding: const EdgeInsets.fromLTRB(16, 30, 16, 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (!widget.showAppBar)
                 Padding(
-                  padding: const EdgeInsets.only(
-                      bottom: 20), // Match GameScreen's 20px bottom padding
+                  padding: const EdgeInsets.only(bottom: 20),
                   child: Text(
                     'PFT Code Cracker',
                     style: TextStyle(
@@ -1154,11 +1140,10 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                     ),
                     borderRadius: BorderRadius.circular(15),
                   ),
-                  height: 140, // Same height as in GameScreen
+                  height: 140,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 12), // Same padding as in GameScreen
+                        horizontal: 12, vertical: 12),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -1172,8 +1157,6 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                           ),
                         ),
                         const SizedBox(height: 12),
-
-                        // Single row for DR SHEPHERD
                         Center(
                           child: SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
@@ -1195,15 +1178,12 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                             ),
                           ),
                         ),
-                        // "Tap to guess the word" button has been removed
                       ],
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 24), // Same spacing as GameScreen
-
-              // Only show the input field and submit button if not all letters are revealed and it's not correct
+              const SizedBox(height: 24),
               if (!isCorrect &&
                   !widget.revealedLetters.every((element) => element)) ...[
                 TextField(
@@ -1302,14 +1282,13 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                   ),
                 ),
 
-              // All letters revealed message - Yellow background with purple text
               if (widget.revealedLetters.every((element) => element) &&
                   !isCorrect) ...[
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: LSUColors.gold, // Changed to solid gold (yellow)
+                    color: LSUColors.gold,
                     borderRadius: BorderRadius.circular(12),
                     border:
                         Border.all(color: LSUColors.corporateGold, width: 1.5),
@@ -1321,7 +1300,7 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: LSUColors.purple, // Changed to purple
+                          color: LSUColors.purple,
                           fontFamily: 'ProximaNova',
                         ),
                         textAlign: TextAlign.center,
@@ -1331,7 +1310,7 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                         'Continue exploring the building to answer all the questions!',
                         style: TextStyle(
                           fontSize: 16,
-                          color: LSUColors.purple, // Changed to purple
+                          color: LSUColors.purple,
                           fontFamily: 'ProximaNova',
                         ),
                         textAlign: TextAlign.center,
