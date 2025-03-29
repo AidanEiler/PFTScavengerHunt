@@ -38,6 +38,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false, // Remove debug banner
       title: 'PFT Code Cracker',
       theme: ThemeData(
         primaryColor: LSUColors.purple,
@@ -84,16 +85,72 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
-  final List<Widget> _screens = [
-    HomeScreen(),
-    GameScreen(),
-    WordGuessDirectScreen(),
-  ];
+  // The secret word without any spaces
+  final String secretWord = "DRSHEPHERD";
+  List<bool> revealedLetters = [];
+  // Map to track which questions have been answered
+  Map<int, bool> questionAnswered = {};
+  // Define which letter is unlocked by each question (0-based index)
+  final Map<int, int> questionToLetterMap = {
+    0: 8, // Question 1 (previously 9) unlocks R
+    1: 0, // Question 2 (previously 1) unlocks D
+    2: 1, // Question 3 (previously 2) unlocks R
+    3: 2, // Question 4 (previously 3) unlocks S
+    4: 3, // Question 5 (previously 4) unlocks H
+    5: 4, // Question 6 (previously 5) unlocks E
+    6: 5, // Question 7 (previously 6) unlocks P
+    7: 6, // Question 8 (previously 7) unlocks H
+    8: 7, // Question 9 (previously 8) unlocks E
+    9: 9, // Question 10 unlocks D
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the revealed letters state
+    revealedLetters = List.generate(secretWord.length, (index) => false);
+    // Initialize all questions as unanswered
+    for (int i = 0; i < 10; i++) {
+      questionAnswered[i] = false;
+    }
+  }
+
+  // Method to reveal a letter when a specific question is answered
+  void revealLetterForQuestion(int questionIndex) {
+    if (questionAnswered[questionIndex] == true) {
+      // Question already answered, don't reveal another letter
+      return;
+    }
+
+    setState(() {
+      // Mark this question as answered
+      questionAnswered[questionIndex] = true;
+
+      // Reveal the corresponding letter based on the mapping
+      int letterIndex = questionToLetterMap[questionIndex] ?? 0;
+      revealedLetters[letterIndex] = true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Create screens with the current state
+    final List<Widget> screens = [
+      HomeScreen(),
+      GameScreen(
+        secretWord: secretWord,
+        revealedLetters: revealedLetters,
+        revealLetterForQuestion: revealLetterForQuestion,
+        questionAnswered: questionAnswered,
+      ),
+      WordGuessDirectScreen(
+        secretWord: secretWord,
+        revealedLetters: revealedLetters,
+      ),
+    ];
+
     return Scaffold(
-      body: _screens[_currentIndex],
+      body: screens[_currentIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: LSUColors.purple,
@@ -132,33 +189,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class WordGuessDirectScreen extends StatefulWidget {
-  const WordGuessDirectScreen({super.key});
-
-  @override
-  _WordGuessDirectScreenState createState() => _WordGuessDirectScreenState();
-}
-
-class _WordGuessDirectScreenState extends State<WordGuessDirectScreen> {
-  final String secretWord = "DR SHEPHERD";
-  List<bool> revealedLetters = [];
-
-  @override
-  void initState() {
-    super.initState();
-    revealedLetters = List.generate(secretWord.length, (index) => false);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return WordGuessScreen(
-      secretWord: secretWord,
-      revealedLetters: revealedLetters,
-      showAppBar: false,
     );
   }
 }
@@ -202,36 +232,39 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 24),
+                // Title text directly without yellow container box
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Text(
-                    'PFT Code Cracker',
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: LSUColors.gold,
-                      letterSpacing: 1.2,
-                      fontFamily: globalFontFamily,
-                    ),
-                    textAlign: TextAlign.center,
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'PFT Code Cracker',
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: LSUColors.gold,
+                          letterSpacing: 1.2,
+                          fontFamily: globalFontFamily,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Explore what LSU has to offer for prospective engineers!',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          color: Colors.white,
+                          height: 1.5,
+                          fontFamily: globalFontFamily,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: Text(
-                    'Explore what LSU has to offer for prospective engineers!',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                      height: 1.5,
-                      fontFamily: globalFontFamily,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                const SizedBox(height: 60),
+                const SizedBox(height: 40),
                 ElevatedButton(
                   onPressed: () {
                     (context.findAncestorStateOfType<
@@ -279,7 +312,18 @@ class HomeScreen extends StatelessWidget {
 }
 
 class GameScreen extends StatefulWidget {
-  const GameScreen({super.key});
+  final String secretWord;
+  final List<bool> revealedLetters;
+  final Function(int) revealLetterForQuestion;
+  final Map<int, bool> questionAnswered;
+
+  const GameScreen({
+    super.key,
+    required this.secretWord,
+    required this.revealedLetters,
+    required this.revealLetterForQuestion,
+    required this.questionAnswered,
+  });
 
   @override
   _GameScreenState createState() => _GameScreenState();
@@ -289,48 +333,48 @@ class _GameScreenState extends State<GameScreen> {
   final List<Question> questions = [
     Question(
       questionText:
-          'Question 1: Between Zones 1100, 1200, and 1300, in which is the Panera Bread located?',
+          'Question 1: In section 1100, what is the room number of the auditorium?',
+      correctAnswer: '1101',
+    ),
+    Question(
+      questionText:
+          'Question 2: Between Zones 1100, 1200, and 1300, in which is the Panera Bread located?',
       correctAnswer: '1300',
     ),
     Question(
       questionText:
-          'Question 2: Past this location up ahead, there should be a Bronze statue between two classrooms. What are the first three words on the plaque of the statue?',
+          'Question 3: Past this location up ahead, there should be a Bronze statue between two classrooms. What are the first three words on the plaque of the statue?',
       correctAnswer: 'Tau Beta Gamma',
     ),
     Question(
       questionText:
-          'Question 3: By now you should have found a set of wide stairs. Going up, how many steps is it? (wooden steps)',
+          'Question 4: By now you should have found a set of wide stairs. Going up, how many steps is it? (wooden steps)',
       correctAnswer: '11',
     ),
     Question(
       questionText:
-          'Question 4: Now you are on the second floor. To your left are engineering labs, and to your right computer labs. What zone are the computer labs located in?',
+          'Question 5: Now you are on the second floor. To your left are engineering labs, and to your right computer labs. What zone are the computer labs located in?',
       correctAnswer: '2300',
     ),
     Question(
       questionText:
-          'Question 5: As soon as you turn left you should see a room with part of a car in it. What branch of engineering does this driving simulator lab belong to?',
+          'Question 6: As soon as you turn left you should see a room with part of a car in it. What branch of engineering does this driving simulator lab belong to?',
       correctAnswer: 'Civil engineering',
     ),
     Question(
       questionText:
-          'Question 6: Now that you have familiarized yourself with the first and second floor, it\'s time to proceed to the third. Whose office is 3209G?',
+          'Question 7: Now that you have familiarized yourself with the first and second floor, it\'s time to proceed to the third. Whose office is 3209G?',
       correctAnswer: 'Mahmood Jasim',
     ),
     Question(
       questionText:
-          'Question 7: What room number is the office of Nash Mahmood?',
+          'Question 8: What room number is the office of Nash Mahmood?',
       correctAnswer: '3209H',
     ),
     Question(
       questionText:
-          'Question 8: You\'re almost done! In the central lobby of the third floor, how many screens are set up there?',
+          'Question 9: You\'re almost done! In the central lobby of the third floor, how many screens are set up there?',
       correctAnswer: '1',
-    ),
-    Question(
-      questionText:
-          'Question 9: In section 1100, what is the room number of the auditorium?',
-      correctAnswer: '1101',
     ),
     Question(
       questionText:
@@ -339,75 +383,70 @@ class _GameScreenState extends State<GameScreen> {
     ),
   ];
 
-  final String secretWord = "DR SHEPHERD";
-  List<bool> revealedLetters = [];
-  List<bool> questionAnswered = [];
-  int currentLetterIndex = 0;
+  // Build letter tile for secret word display
+  Widget buildLetterTile(String letter, bool isRevealed) {
+    // Make tiles bigger by 3 pixels
+    double tileWidth = 29; // Increased from 26
 
-  @override
-  void initState() {
-    super.initState();
-    revealedLetters = List.generate(secretWord.length, (index) => false);
-    questionAnswered = List.generate(questions.length, (index) => false);
-  }
-
-  void revealNextLetter() {
-    if (currentLetterIndex < secretWord.length) {
-      setState(() {
-        revealedLetters[currentLetterIndex] = true;
-        currentLetterIndex++;
-      });
-    }
-  }
-
-  // Build consistent letter tile for secret word display
-  Widget buildLetterTile(String letter, bool isRevealed, double tileWidth) {
     return Container(
       width: tileWidth,
-      height: tileWidth * 1.5,
+      height: tileWidth * 1.3,
+      margin: const EdgeInsets.symmetric(horizontal: 1, vertical: 1),
       decoration: BoxDecoration(
-        color: letter != ' '
-            ? (isRevealed ? LSUColors.gold : Colors.white)
-            : Colors.transparent,
+        color: isRevealed ? LSUColors.purple : Colors.white,
         border: Border.all(
-          color: letter == ' '
-              ? Colors.transparent
-              : (isRevealed
-                  ? LSUColors.corporateGold
-                  : LSUColors.purple.withOpacity(0.3)),
-          width: isRevealed ? 2 : 1,
+          color: isRevealed
+              ? LSUColors.purple.withOpacity(0.8)
+              : LSUColors.purple.withOpacity(0.3),
+          width: isRevealed ? 1.5 : 1,
         ),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(3),
         boxShadow: isRevealed
             ? [
                 BoxShadow(
-                  color: LSUColors.corporateGold.withOpacity(0.3),
-                  blurRadius: 4,
-                  offset: Offset(0, 2),
+                  color: LSUColors.purple.withOpacity(0.2),
+                  blurRadius: 2,
+                  offset: Offset(0, 1),
                 )
               ]
             : null,
       ),
       child: Center(
-        child: letter == ' '
-            ? const SizedBox(width: 16)
-            : (isRevealed
-                ? Text(
-                    letter,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: LSUColors.purple,
-                      fontFamily: 'ProximaNova',
-                    ),
-                  )
-                : const Text('')),
+        child: isRevealed
+            ? Text(
+                letter,
+                style: const TextStyle(
+                  fontSize: 17, // Increased from 14
+                  fontWeight: FontWeight.bold,
+                  color: LSUColors.gold,
+                  fontFamily: 'ProximaNova',
+                ),
+              )
+            : const Text(''),
       ),
     );
   }
 
+  // Add simple spacer for the space between DR and SHEPHERD
+  Widget buildSpacerTile() {
+    return SizedBox(width: 6);
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Force navigation to Guess Secret screen if all letters are revealed
+    if (widget.revealedLetters.every((element) => element)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final mainNav =
+            context.findAncestorStateOfType<_MainNavigationScreenState>();
+        if (mainNav != null && mainNav._currentIndex != 2) {
+          mainNav.setState(() {
+            mainNav._currentIndex = 2; // Go to Guess Secret screen
+          });
+        }
+      });
+    }
+
     return Scaffold(
       backgroundColor: LSUColors.purple,
       body: SafeArea(
@@ -424,7 +463,7 @@ class _GameScreenState extends State<GameScreen> {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: LSUColors.purple,
+                    color: Colors.white,
                     fontFamily: 'ProximaNova',
                   ),
                   textAlign: TextAlign.center,
@@ -458,60 +497,57 @@ class _GameScreenState extends State<GameScreen> {
                       ),
                       borderRadius: BorderRadius.circular(15),
                     ),
+                    height: 140,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 20),
+                          horizontal: 12, vertical: 12),
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Text(
                             'Secret Word',
                             style: TextStyle(
-                              fontSize: 24,
+                              fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: LSUColors.purple,
                               fontFamily: globalFontFamily,
                             ),
                           ),
-                          const SizedBox(height: 24),
-                          LayoutBuilder(
-                            builder: (context, constraints) {
-                              double tileWidth = (constraints.maxWidth -
-                                      (secretWord.length * 8)) /
-                                  secretWord.length;
-                              tileWidth = tileWidth < 20 ? 20 : tileWidth;
-                              return Wrap(
-                                alignment: WrapAlignment.center,
-                                spacing: 4,
-                                runSpacing: 8,
-                                children: List.generate(
-                                  secretWord.length,
-                                  (index) => buildLetterTile(
-                                    secretWord[index],
-                                    revealedLetters[index],
-                                    tileWidth,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: LSUColors.purple,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Text(
-                              'Tap to guess the word!',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                fontFamily: 'ProximaNova',
+                          const SizedBox(height: 12),
+
+                          // Single row for DR SHEPHERD
+                          Center(
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  buildLetterTile(
+                                      'D', widget.revealedLetters[0]),
+                                  buildLetterTile(
+                                      'R', widget.revealedLetters[1]),
+                                  buildSpacerTile(),
+                                  buildLetterTile(
+                                      'S', widget.revealedLetters[2]),
+                                  buildLetterTile(
+                                      'H', widget.revealedLetters[3]),
+                                  buildLetterTile(
+                                      'E', widget.revealedLetters[4]),
+                                  buildLetterTile(
+                                      'P', widget.revealedLetters[5]),
+                                  buildLetterTile(
+                                      'H', widget.revealedLetters[6]),
+                                  buildLetterTile(
+                                      'E', widget.revealedLetters[7]),
+                                  buildLetterTile(
+                                      'R', widget.revealedLetters[8]),
+                                  buildLetterTile(
+                                      'D', widget.revealedLetters[9]),
+                                ],
                               ),
                             ),
                           ),
+                          // Purple "Tap to guess the word" button removed
                         ],
                       ),
                     ),
@@ -530,8 +566,8 @@ class _GameScreenState extends State<GameScreen> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        LSUColors.gold, // Using light purple with opacity
-                        LSUColors.gold, // Lighter shade of purple
+                        LSUColors.gold,
+                        LSUColors.gold,
                       ],
                     ),
                     borderRadius: BorderRadius.circular(15),
@@ -557,6 +593,8 @@ class _GameScreenState extends State<GameScreen> {
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: questions.length,
                           itemBuilder: (context, index) {
+                            bool isAnswered =
+                                widget.questionAnswered[index] ?? false;
                             return Theme(
                                 data: Theme.of(context)
                                     .copyWith(cardColor: LSUColors.lightGold),
@@ -566,33 +604,52 @@ class _GameScreenState extends State<GameScreen> {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  color:
-                                      LSUColors.lightGold, // Double assurance
+                                  // Changed from green to LSU light grey for answered questions
+                                  color: isAnswered
+                                      ? LSUColors.lightGray
+                                      : LSUColors.lightGold,
                                   child: ListTile(
                                     contentPadding: EdgeInsets.symmetric(
                                         horizontal: 16, vertical: 8),
                                     title: Text(
                                       'Question ${index + 1}',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        color: LSUColors.purple,
+                                        color: isAnswered
+                                            ? Colors.green.shade700
+                                            : LSUColors.purple,
                                         fontSize: 16,
                                         fontFamily: 'ProximaNova',
                                       ),
                                     ),
-                                    subtitle: Padding(
-                                      padding: const EdgeInsets.only(top: 4),
-                                      child: Text(
-                                        questions[index].questionText,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          color:
-                                              LSUColors.black.withOpacity(0.8),
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              top: 4, bottom: 4),
+                                          child: Text(
+                                            questions[index].questionText,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              color: LSUColors.black
+                                                  .withOpacity(0.8),
+                                            ),
+                                          ),
                                         ),
-                                      ),
+                                        if (isAnswered)
+                                          Text(
+                                            'Answer: ${questions[index].correctAnswer}',
+                                            style: TextStyle(
+                                              color: Colors.green.shade700,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                      ],
                                     ),
-                                    trailing: questionAnswered[index]
+                                    trailing: isAnswered
                                         ? Container(
                                             padding: EdgeInsets.all(8),
                                             decoration: BoxDecoration(
@@ -614,26 +671,36 @@ class _GameScreenState extends State<GameScreen> {
                                                 color: LSUColors.corporateGold,
                                                 size: 16)),
                                     onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              QuestionDetailScreen(
-                                            question: questions[index],
-                                            questionNumber: index + 1,
-                                            onAnswered: (bool isCorrect) {
-                                              if (isCorrect &&
-                                                  !questionAnswered[index]) {
-                                                setState(() {
-                                                  questionAnswered[index] =
-                                                      true;
-                                                  revealNextLetter();
-                                                });
-                                              }
-                                            },
+                                      if (!isAnswered) {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                QuestionDetailScreen(
+                                              question: questions[index],
+                                              questionNumber: index + 1,
+                                              onAnswered: (bool isCorrect) {
+                                                if (isCorrect && !isAnswered) {
+                                                  widget
+                                                      .revealLetterForQuestion(
+                                                          index);
+                                                  setState(() {});
+                                                }
+                                              },
+                                            ),
                                           ),
-                                        ),
-                                      );
+                                        );
+                                      } else {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                                'You\'ve already answered this question!'),
+                                            backgroundColor: Colors.green,
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                      }
                                     },
                                   ),
                                 ));
@@ -748,6 +815,7 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
               ),
             ),
             const SizedBox(height: 30),
+            // Only show input fields if not answered yet
             if (!isAnswered) ...[
               TextField(
                 controller: answerController,
@@ -794,11 +862,12 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                 ),
               ),
             ],
-            if (feedbackMessage.isNotEmpty)
+            // Fixed the feedback message to prevent overflow
+            if (feedbackMessage.isNotEmpty && !isAnswered)
               Container(
                 margin: const EdgeInsets.only(top: 24),
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: feedbackMessage.contains('Correct')
                       ? Colors.green.withOpacity(0.1)
@@ -812,17 +881,21 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                   ),
                 ),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      feedbackMessage.contains('Correct')
-                          ? Icons.check_circle
-                          : Icons.error,
-                      color: feedbackMessage.contains('Correct')
-                          ? Colors.green
-                          : Colors.red,
-                      size: 24,
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Icon(
+                        feedbackMessage.contains('Correct')
+                            ? Icons.check_circle
+                            : Icons.error,
+                        color: feedbackMessage.contains('Correct')
+                            ? Colors.green
+                            : Colors.red,
+                        size: 20,
+                      ),
                     ),
-                    SizedBox(width: 12),
+                    SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         feedbackMessage,
@@ -831,15 +904,68 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                               ? Colors.green
                               : Colors.red,
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: 15,
                         ),
+                        softWrap: true,
+                        overflow: TextOverflow.visible,
                       ),
                     ),
                   ],
                 ),
               ),
+            // Success message when answered correctly
             if (isAnswered) ...[
-              const SizedBox(height: 40),
+              const SizedBox(height: 30),
+              Container(
+                padding: EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.green, width: 1.5),
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.check_circle,
+                      color: Colors.green,
+                      size: 36,
+                    ),
+                    SizedBox(height: 12),
+                    Text(
+                      'Congratulations!',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        fontFamily: 'ProximaNova',
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Correct Answer: ${widget.question.correctAnswer}',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'ProximaNova',
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'You\'ve unlocked a letter in the secret word!',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontSize: 16,
+                        fontFamily: 'ProximaNova',
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
               OutlinedButton(
                 onPressed: () => Navigator.pop(context),
                 style: OutlinedButton.styleFrom(
@@ -884,73 +1010,79 @@ class WordGuessScreen extends StatefulWidget {
 }
 
 class _WordGuessScreenState extends State<WordGuessScreen> {
-  late List<bool> _revealedLetters;
   final TextEditingController guessController = TextEditingController();
   String feedbackMessage = '';
   bool isCorrect = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _revealedLetters = List.from(widget.revealedLetters);
-  }
+  // Build letter tile for secret word display
+  Widget buildLetterTile(String letter, bool isRevealed) {
+    // Make tiles bigger by 3 pixels
+    double tileWidth = 29; // Increased from 26
 
-  // Build consistent letter tile for secret word display (matching GameScreen)
-  Widget buildLetterTile(String letter, bool isRevealed, double tileWidth) {
     return Container(
       width: tileWidth,
-      height: tileWidth * 1.5,
-      margin: const EdgeInsets.symmetric(horizontal: 2),
+      height: tileWidth * 1.3,
+      margin: const EdgeInsets.symmetric(horizontal: 1, vertical: 1),
       decoration: BoxDecoration(
-        color: letter != ' '
-            ? (isRevealed ? LSUColors.gold : Colors.white)
-            : Colors.transparent,
+        color: isRevealed ? LSUColors.purple : Colors.white,
         border: Border.all(
-          color: letter == ' '
-              ? Colors.transparent
-              : (isRevealed
-                  ? LSUColors.corporateGold
-                  : LSUColors.purple.withOpacity(0.3)),
-          width: isRevealed ? 2 : 1,
+          color: isRevealed
+              ? LSUColors.purple.withOpacity(0.8)
+              : LSUColors.purple.withOpacity(0.3),
+          width: isRevealed ? 1.5 : 1,
         ),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(3),
         boxShadow: isRevealed
             ? [
                 BoxShadow(
-                  color: LSUColors.corporateGold.withOpacity(0.3),
-                  blurRadius: 4,
-                  offset: Offset(0, 2),
+                  color: LSUColors.purple.withOpacity(0.2),
+                  blurRadius: 2,
+                  offset: Offset(0, 1),
                 )
               ]
             : null,
       ),
       child: Center(
-        child: letter == ' '
-            ? const SizedBox(width: 16)
-            : (isRevealed
-                ? Text(
-                    letter,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: LSUColors.purple,
-                      fontFamily: 'ProximaNova',
-                    ),
-                  )
-                : const Text('')),
+        child: isRevealed
+            ? Text(
+                letter,
+                style: const TextStyle(
+                  fontSize: 17, // Increased from 14
+                  fontWeight: FontWeight.bold,
+                  color: LSUColors.gold,
+                  fontFamily: 'ProximaNova',
+                ),
+              )
+            : const Text(''),
       ),
     );
   }
 
+  // Add simple spacer for the space between DR and SHEPHERD
+  Widget buildSpacerTile() {
+    return SizedBox(width: 6);
+  }
+
   void submitGuess() {
+    // Remove spaces from the input for comparison
     String guess = guessController.text.trim().toUpperCase();
-    if (guess == widget.secretWord) {
+
+    if (guess == widget.secretWord || guess == 'DR SHEPHERD') {
       setState(() {
         isCorrect = true;
         feedbackMessage = 'Correct!';
-        _revealedLetters =
-            List.generate(widget.secretWord.length, (index) => true);
       });
+
+      // Update the parent's state to reveal all letters
+      final mainNav =
+          context.findAncestorStateOfType<_MainNavigationScreenState>();
+      if (mainNav != null) {
+        mainNav.setState(() {
+          for (int i = 0; i < mainNav.revealedLetters.length; i++) {
+            mainNav.revealedLetters[i] = true;
+          }
+        });
+      }
     } else {
       setState(() {
         feedbackMessage = 'Incorrect! Try again.';
@@ -983,19 +1115,21 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
           : null,
       body: SafeArea(
         child: SingleChildScrollView(
+          // Using the exact same padding as GameScreen
           padding: const EdgeInsets.fromLTRB(16, 30, 16, 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (!widget.showAppBar)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.only(
+                      bottom: 20), // Match GameScreen's 20px bottom padding
                   child: Text(
                     'PFT Code Cracker',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: LSUColors.purple,
+                      color: Colors.white,
                       fontFamily: 'ProximaNova',
                     ),
                     textAlign: TextAlign.center,
@@ -1020,54 +1154,58 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                     ),
                     borderRadius: BorderRadius.circular(15),
                   ),
+                  height: 140, // Same height as in GameScreen
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 16),
+                        horizontal: 12,
+                        vertical: 12), // Same padding as in GameScreen
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text(
                           'Secret Word',
                           style: TextStyle(
-                            fontSize: 24,
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
                             color: LSUColors.purple,
                             fontFamily: globalFontFamily,
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        LayoutBuilder(
-                          builder: (context, constraints) {
-                            double availableWidth = constraints.maxWidth - 24;
-                            double tileWidth =
-                                (availableWidth / widget.secretWord.length) - 4;
-                            tileWidth = tileWidth > 30 ? 30 : tileWidth;
+                        const SizedBox(height: 12),
 
-                            return SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: List.generate(
-                                  widget.secretWord.length,
-                                  (index) => buildLetterTile(
-                                    widget.secretWord[index],
-                                    _revealedLetters[index],
-                                    tileWidth,
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
+                        // Single row for DR SHEPHERD
+                        Center(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                buildLetterTile('D', widget.revealedLetters[0]),
+                                buildLetterTile('R', widget.revealedLetters[1]),
+                                buildSpacerTile(),
+                                buildLetterTile('S', widget.revealedLetters[2]),
+                                buildLetterTile('H', widget.revealedLetters[3]),
+                                buildLetterTile('E', widget.revealedLetters[4]),
+                                buildLetterTile('P', widget.revealedLetters[5]),
+                                buildLetterTile('H', widget.revealedLetters[6]),
+                                buildLetterTile('E', widget.revealedLetters[7]),
+                                buildLetterTile('R', widget.revealedLetters[8]),
+                                buildLetterTile('D', widget.revealedLetters[9]),
+                              ],
+                            ),
+                          ),
                         ),
+                        // "Tap to guess the word" button has been removed
                       ],
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 24), // Same spacing as GameScreen
 
-              // TextField like QuestionDetailScreen
+              // Only show the input field and submit button if not all letters are revealed and it's not correct
               if (!isCorrect &&
-                  !_revealedLetters.every((element) => element)) ...[
+                  !widget.revealedLetters.every((element) => element)) ...[
                 TextField(
                   controller: guessController,
                   decoration: InputDecoration(
@@ -1096,7 +1234,6 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                   onSubmitted: (_) => submitGuess(),
                 ),
                 const SizedBox(height: 20),
-                // Button styled like QuestionDetailScreen
                 ElevatedButton(
                   onPressed: submitGuess,
                   style: ElevatedButton.styleFrom(
@@ -1117,10 +1254,10 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                 ),
               ],
 
-              // Feedback message - styled like QuestionDetailScreen
+              // Feedback message
               if (feedbackMessage.isNotEmpty &&
                   !isCorrect &&
-                  !_revealedLetters.every((element) => element))
+                  !widget.revealedLetters.every((element) => element))
                 Container(
                   margin: const EdgeInsets.only(top: 24),
                   padding:
@@ -1165,14 +1302,14 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                   ),
                 ),
 
-              // All letters revealed message
-              if (_revealedLetters.every((element) => element) &&
+              // All letters revealed message - Yellow background with purple text
+              if (widget.revealedLetters.every((element) => element) &&
                   !isCorrect) ...[
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: LSUColors.gold.withOpacity(0.05),
+                    color: LSUColors.gold, // Changed to solid gold (yellow)
                     borderRadius: BorderRadius.circular(12),
                     border:
                         Border.all(color: LSUColors.corporateGold, width: 1.5),
@@ -1184,7 +1321,7 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: LSUColors.corporatePurple,
+                          color: LSUColors.purple, // Changed to purple
                           fontFamily: 'ProximaNova',
                         ),
                         textAlign: TextAlign.center,
@@ -1194,34 +1331,32 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                         'Continue exploring the building to answer all the questions!',
                         style: TextStyle(
                           fontSize: 16,
-                          color: LSUColors.corporatePurple,
+                          color: LSUColors.purple, // Changed to purple
                           fontFamily: 'ProximaNova',
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      if (!widget.showAppBar) ...[
-                        SizedBox(height: 24),
-                        ElevatedButton(
-                          onPressed: () {
-                            // Navigate to Game tab
+                      SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: () {
+                          // Navigate to Game tab
+                          (context.findAncestorStateOfType<
+                                  _MainNavigationScreenState>())
+                              ?.setState(() {
                             (context.findAncestorStateOfType<
                                     _MainNavigationScreenState>())
-                                ?.setState(() {
-                              (context.findAncestorStateOfType<
-                                      _MainNavigationScreenState>())
-                                  ?._currentIndex = 1;
-                            });
-                          },
-                          child: Text(
-                            'Play again!',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'ProximaNova',
-                            ),
+                                ?._currentIndex = 1;
+                          });
+                        },
+                        child: Text(
+                          'Go to Questions',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'ProximaNova',
                           ),
                         ),
-                      ],
+                      ),
                     ],
                   ),
                 ),
@@ -1301,7 +1436,7 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                             });
                           },
                           child: Text(
-                            'Play again!',
+                            'Go to Questions',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -1318,6 +1453,31 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class WordGuessDirectScreen extends StatefulWidget {
+  final String secretWord;
+  final List<bool> revealedLetters;
+
+  const WordGuessDirectScreen({
+    super.key,
+    required this.secretWord,
+    required this.revealedLetters,
+  });
+
+  @override
+  _WordGuessDirectScreenState createState() => _WordGuessDirectScreenState();
+}
+
+class _WordGuessDirectScreenState extends State<WordGuessDirectScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return WordGuessScreen(
+      secretWord: widget.secretWord,
+      revealedLetters: widget.revealedLetters,
+      showAppBar: false,
     );
   }
 }
