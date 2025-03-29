@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+// Global font choice - change this to switch between fonts
+const String globalFontFamily =
+    'ProximaNova'; // Change to 'ProximaNova' to switch
+
 void main() => runApp(MyApp());
 
 class LSUColors {
@@ -53,7 +57,6 @@ class MyApp extends StatelessWidget {
           primary: LSUColors.purple,
           secondary: LSUColors.gold,
           tertiary: LSUColors.corporatePurple,
-          background: LSUColors.purple,
           surface: LSUColors.lightGray,
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
@@ -76,7 +79,7 @@ class MyApp extends StatelessWidget {
             borderRadius: BorderRadius.circular(12.0),
           ),
         ),
-        fontFamily: 'Roboto',
+        fontFamily: globalFontFamily,
       ),
       home: MainNavigationScreen(),
     );
@@ -84,6 +87,8 @@ class MyApp extends StatelessWidget {
 }
 
 class MainNavigationScreen extends StatefulWidget {
+  const MainNavigationScreen({super.key});
+
   @override
   _MainNavigationScreenState createState() => _MainNavigationScreenState();
 }
@@ -156,8 +161,8 @@ class _WordGuessDirectScreenState extends State<WordGuessDirectScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize all letters as revealed for direct access to the answer screen
-    revealedLetters = List.generate(secretWord.length, (index) => true);
+    // Initialize all letters as hidden initially
+    revealedLetters = List.generate(secretWord.length, (index) => false);
   }
 
   @override
@@ -220,6 +225,7 @@ class HomeScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       color: LSUColors.gold,
                       letterSpacing: 1.2,
+                      fontFamily: globalFontFamily,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -233,6 +239,7 @@ class HomeScreen extends StatelessWidget {
                       fontSize: 18,
                       color: Colors.white,
                       height: 1.5,
+                      fontFamily: globalFontFamily,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -268,6 +275,7 @@ class HomeScreen extends StatelessWidget {
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1.0,
+                          fontFamily: globalFontFamily,
                         ),
                       ),
                       SizedBox(width: 12),
@@ -366,6 +374,52 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
+  // Build consistent letter tile for secret word display
+  Widget buildLetterTile(String letter, bool isRevealed, double tileWidth) {
+    return Container(
+      width: tileWidth,
+      height: tileWidth * 1.5,
+      decoration: BoxDecoration(
+        color: letter != ' '
+            ? (isRevealed ? LSUColors.gold : Colors.white)
+            : Colors.transparent,
+        border: Border.all(
+          color: letter == ' '
+              ? Colors.transparent
+              : (isRevealed
+                  ? LSUColors.corporateGold
+                  : LSUColors.purple.withOpacity(0.3)),
+          width: isRevealed ? 2 : 1,
+        ),
+        borderRadius: BorderRadius.circular(6),
+        boxShadow: isRevealed
+            ? [
+                BoxShadow(
+                  color: LSUColors.corporateGold.withOpacity(0.3),
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                )
+              ]
+            : null,
+      ),
+      child: Center(
+        child: letter == ' '
+            ? const SizedBox(width: 16)
+            : (isRevealed
+                ? Text(
+                    letter,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: LSUColors.purple,
+                      fontFamily: 'ProximaNova',
+                    ),
+                  )
+                : const Text('')),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -385,6 +439,7 @@ class _GameScreenState extends State<GameScreen> {
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: LSUColors.purple,
+                    fontFamily: 'ProximaNova',
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -429,6 +484,7 @@ class _GameScreenState extends State<GameScreen> {
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                               color: LSUColors.purple,
+                              fontFamily: globalFontFamily,
                             ),
                           ),
                           const SizedBox(height: 24),
@@ -445,50 +501,10 @@ class _GameScreenState extends State<GameScreen> {
                                 runSpacing: 8,
                                 children: List.generate(
                                   secretWord.length,
-                                  (index) => Container(
-                                    width: tileWidth,
-                                    height: tileWidth * 1.5,
-                                    decoration: BoxDecoration(
-                                      color: secretWord[index] != ' '
-                                          ? (revealedLetters[index]
-                                              ? LSUColors.gold
-                                              : Colors.white)
-                                          : Colors.transparent,
-                                      border: Border.all(
-                                        color: secretWord[index] == ' '
-                                            ? Colors.transparent
-                                            : (revealedLetters[index]
-                                                ? LSUColors.corporateGold
-                                                : LSUColors.purple
-                                                    .withOpacity(0.3)),
-                                        width: revealedLetters[index] ? 2 : 1,
-                                      ),
-                                      borderRadius: BorderRadius.circular(6),
-                                      boxShadow: revealedLetters[index]
-                                          ? [
-                                              BoxShadow(
-                                                color: LSUColors.corporateGold
-                                                    .withOpacity(0.3),
-                                                blurRadius: 4,
-                                                offset: Offset(0, 2),
-                                              )
-                                            ]
-                                          : null,
-                                    ),
-                                    child: Center(
-                                      child: secretWord[index] == ' '
-                                          ? const SizedBox(width: 16)
-                                          : (revealedLetters[index]
-                                              ? Text(
-                                                  secretWord[index],
-                                                  style: const TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: LSUColors.purple,
-                                                  ),
-                                                )
-                                              : const Text('')),
-                                    ),
+                                  (index) => buildLetterTile(
+                                    secretWord[index],
+                                    revealedLetters[index],
+                                    tileWidth,
                                   ),
                                 ),
                               );
@@ -508,6 +524,7 @@ class _GameScreenState extends State<GameScreen> {
                                 color: LSUColors.corporatePurple,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
+                                fontFamily: 'ProximaNova',
                               ),
                             ),
                           ),
@@ -548,6 +565,7 @@ class _GameScreenState extends State<GameScreen> {
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: LSUColors.purple,
+                            fontFamily: 'ProximaNova',
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -571,6 +589,7 @@ class _GameScreenState extends State<GameScreen> {
                                     fontWeight: FontWeight.bold,
                                     color: LSUColors.purple,
                                     fontSize: 16,
+                                    fontFamily: 'ProximaNova',
                                   ),
                                 ),
                                 subtitle: Padding(
@@ -693,6 +712,7 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: LSUColors.gold,
+            fontFamily: 'ProximaNova',
           ),
         ),
         leading: IconButton(
@@ -730,6 +750,7 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                       fontSize: 18,
                       height: 1.5,
                       color: LSUColors.black,
+                      fontFamily: 'ProximaNova',
                     ),
                   ),
                 ),
@@ -759,7 +780,7 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                   contentPadding:
                       EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 ),
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: 16, fontFamily: globalFontFamily),
                 onSubmitted: (_) => submitAnswer(),
               ),
               const SizedBox(height: 20),
@@ -777,6 +798,7 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
+                    fontFamily: 'ProximaNova',
                   ),
                 ),
               ),
@@ -842,6 +864,7 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: LSUColors.purple,
+                    fontFamily: 'ProximaNova',
                   ),
                 ),
               ),
@@ -870,54 +893,61 @@ class WordGuessScreen extends StatefulWidget {
 }
 
 class _WordGuessScreenState extends State<WordGuessScreen> {
+  late List<bool> _revealedLetters;
   final TextEditingController guessController = TextEditingController();
   String feedbackMessage = '';
   bool isCorrect = false;
 
-  List<Widget> _buildLetterTiles(double tileWidth) {
-    return List.generate(
-      widget.secretWord.length,
-      (index) => Container(
-        margin: const EdgeInsets.symmetric(horizontal: 2),
-        width: tileWidth,
-        height: tileWidth * 1.2,
-        decoration: BoxDecoration(
-          color: widget.secretWord[index] != ' '
-              ? (widget.revealedLetters[index] ? LSUColors.gold : Colors.white)
-              : Colors.transparent,
-          border: Border.all(
-            color: widget.secretWord[index] == ' '
-                ? Colors.transparent
-                : (widget.revealedLetters[index]
-                    ? LSUColors.corporateGold
-                    : LSUColors.purple.withOpacity(0.3)),
-            width: widget.revealedLetters[index] ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: widget.revealedLetters[index]
-              ? [
-                  BoxShadow(
-                    color: LSUColors.corporateGold.withOpacity(0.3),
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
+  @override
+  void initState() {
+    super.initState();
+    // Initialize revealed letters based on what was passed in
+    _revealedLetters = List.from(widget.revealedLetters);
+  }
+
+  // Build consistent letter tile for secret word display (matching GameScreen)
+  Widget buildLetterTile(String letter, bool isRevealed, double tileWidth) {
+    return Container(
+      width: tileWidth,
+      height: tileWidth * 1.5,
+      margin: const EdgeInsets.symmetric(horizontal: 2),
+      decoration: BoxDecoration(
+        color: letter != ' '
+            ? (isRevealed ? LSUColors.gold : Colors.white)
+            : Colors.transparent,
+        border: Border.all(
+          color: letter == ' '
+              ? Colors.transparent
+              : (isRevealed
+                  ? LSUColors.corporateGold
+                  : LSUColors.purple.withOpacity(0.3)),
+          width: isRevealed ? 2 : 1,
+        ),
+        borderRadius: BorderRadius.circular(6),
+        boxShadow: isRevealed
+            ? [
+                BoxShadow(
+                  color: LSUColors.corporateGold.withOpacity(0.3),
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                )
+              ]
+            : null,
+      ),
+      child: Center(
+        child: letter == ' '
+            ? const SizedBox(width: 16)
+            : (isRevealed
+                ? Text(
+                    letter,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: LSUColors.purple,
+                      fontFamily: 'Comic Sans MS',
+                    ),
                   )
-                ]
-              : null,
-        ),
-        child: Center(
-          child: widget.secretWord[index] == ' '
-              ? const SizedBox(width: 16)
-              : (widget.revealedLetters[index]
-                  ? Text(
-                      widget.secretWord[index],
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: LSUColors.purple,
-                      ),
-                    )
-                  : const Text('')),
-        ),
+                : const Text('')),
       ),
     );
   }
@@ -928,6 +958,9 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
       setState(() {
         isCorrect = true;
         feedbackMessage = 'Congratulations! You got it right!';
+        // Reveal all letters when guessed correctly
+        _revealedLetters =
+            List.generate(widget.secretWord.length, (index) => true);
       });
     } else {
       setState(() {
@@ -949,6 +982,7 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: LSUColors.gold,
+                  fontFamily: 'ProximaNova',
                 ),
               ),
               leading: IconButton(
@@ -971,6 +1005,7 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                       color: LSUColors.purple,
+                      fontFamily: 'ProximaNova',
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -989,40 +1024,33 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          LSUColors.purple.withOpacity(0.05),
-                          LSUColors.purple.withOpacity(0.12),
+                          LSUColors.gold.withOpacity(0.1),
+                          LSUColors.gold.withOpacity(0.3),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Column(
                       children: [
-                        const Text(
-                          'DR SHEPHERD',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: LSUColors.purple,
-                          ),
-                        ),
-                        const SizedBox(height: 30),
                         LayoutBuilder(
                           builder: (context, constraints) {
-                            // Calculate a smaller fixed tile width to ensure all characters fit on one line
-                            double availableWidth = constraints.maxWidth -
-                                24; // Account for padding
+                            double availableWidth = constraints.maxWidth - 24;
                             double tileWidth =
-                                (availableWidth / widget.secretWord.length) -
-                                    4; // 4 for the margin
-
-                            // Set a maximum tile width to prevent them from being too large
+                                (availableWidth / widget.secretWord.length) - 4;
                             tileWidth = tileWidth > 30 ? 30 : tileWidth;
 
                             return SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: _buildLetterTiles(tileWidth),
+                                children: List.generate(
+                                  widget.secretWord.length,
+                                  (index) => buildLetterTile(
+                                    widget.secretWord[index],
+                                    _revealedLetters[index],
+                                    tileWidth,
+                                  ),
+                                ),
                               ),
                             );
                           },
@@ -1033,7 +1061,7 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                 ),
                 const SizedBox(height: 40),
                 if (!isCorrect &&
-                    !widget.revealedLetters.every((element) => element)) ...[
+                    !_revealedLetters.every((element) => element)) ...[
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -1057,6 +1085,7 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
                               color: LSUColors.corporatePurple,
+                              fontFamily: 'ProximaNova',
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -1093,6 +1122,7 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                             style: TextStyle(
                               fontSize: 16,
                               letterSpacing: 1.0,
+                              fontFamily: 'ProximaNova',
                             ),
                             textCapitalization: TextCapitalization.characters,
                             textAlign: TextAlign.center,
@@ -1121,6 +1151,7 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: 1.0,
+                                fontFamily: 'ProximaNova',
                               ),
                             ),
                           ),
@@ -1129,24 +1160,26 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                     ),
                   ),
                 ],
-                if (widget.revealedLetters.every((element) => element) &&
+                if (_revealedLetters.every((element) => element) &&
                     !isCorrect) ...[
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: LSUColors.purple.withOpacity(0.05),
+                      color: LSUColors.gold.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: LSUColors.purple, width: 1.5),
+                      border: Border.all(
+                          color: LSUColors.corporateGold, width: 1.5),
                     ),
                     child: Column(
                       children: [
                         Text(
-                          'The answer to the puzzle is "DR SHEPHERD".',
+                          'All letters revealed!',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: LSUColors.purple,
+                            color: LSUColors.corporatePurple,
+                            fontFamily: 'ProximaNova',
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -1156,6 +1189,7 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                           style: TextStyle(
                             fontSize: 16,
                             color: LSUColors.corporatePurple,
+                            fontFamily: 'ProximaNova',
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -1177,6 +1211,7 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
+                                fontFamily: 'ProximaNova',
                               ),
                             ),
                           ),
@@ -1208,6 +1243,7 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                             color: Colors.green,
                             fontWeight: FontWeight.bold,
                             fontSize: 24,
+                            fontFamily: 'ProximaNova',
                           ),
                         ),
                         SizedBox(height: 8),
@@ -1216,6 +1252,7 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                           style: TextStyle(
                             color: Colors.green,
                             fontSize: 16,
+                            fontFamily: 'ProximaNova',
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -1239,6 +1276,7 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.green,
+                                fontFamily: 'ProximaNova',
                               ),
                             ),
                           ),
@@ -1259,6 +1297,7 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
+                                fontFamily: 'ProximaNova',
                               ),
                             ),
                           ),
@@ -1269,7 +1308,7 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                 ],
                 if (feedbackMessage.isNotEmpty &&
                     !isCorrect &&
-                    !widget.revealedLetters.every((element) => element))
+                    !_revealedLetters.every((element) => element))
                   Container(
                     margin: const EdgeInsets.only(top: 24),
                     padding: const EdgeInsets.symmetric(
@@ -1299,6 +1338,7 @@ class _WordGuessScreenState extends State<WordGuessScreen> {
                               color: Colors.red,
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
+                              fontFamily: 'ProximaNova',
                             ),
                           ),
                         ),
