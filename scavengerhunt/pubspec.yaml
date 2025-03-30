@@ -41,6 +41,18 @@ dev_dependencies:
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices.
   flutter_lints: ^5.0.0
+  
+  # Added for generating app icons
+  flutter_launcher_icons: ^0.13.1
+
+# Configuration for flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "Assets/LSU_icon.png"
+  adaptive_icon_background: "#461D7C" # LSU Purple
+  adaptive_icon_foreground: "Assets/LSU_icon.png"
+  remove_alpha_ios: true
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -55,6 +67,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - Assets/LSU.png
+    - Assets/LSU_icon.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
@@ -62,7 +75,6 @@ flutter:
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/assets-and-images/#from-packages
 
-  # To add custom fonts to your application, add a fonts section here,
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a
   # "family" key with the font family name, and a "fonts" key with a

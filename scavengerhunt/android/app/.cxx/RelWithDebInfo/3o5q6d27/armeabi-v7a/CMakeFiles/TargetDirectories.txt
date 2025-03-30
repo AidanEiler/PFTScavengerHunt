@@ -1,0 +1,2 @@
+C:/Users/DaUlt/OneDrive/Documents/VSCode/PFTScavengerHunt/scavengerhunt/android/app/.cxx/RelWithDebInfo/3o5q6d27/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/DaUlt/OneDrive/Documents/VSCode/PFTScavengerHunt/scavengerhunt/android/app/.cxx/RelWithDebInfo/3o5q6d27/armeabi-v7a/CMakeFiles/rebuild_cache.dir

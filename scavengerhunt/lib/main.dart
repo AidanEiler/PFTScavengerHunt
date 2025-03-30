@@ -104,6 +104,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     9: 9,
   };
 
+  // Add a flag to track if auto-navigation has happened
+  bool _hasAutoNavigatedToGuessScreen = false;
+
   @override
   void initState() {
     super.initState();
@@ -127,6 +130,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       // Reveal the corresponding letter based on the mapping
       int letterIndex = questionToLetterMap[questionIndex] ?? 0;
       revealedLetters[letterIndex] = true;
+
+      // Check if all letters are revealed and auto-navigate only once and only if we're on the game screen
+      if (revealedLetters.every((element) => element) &&
+          !_hasAutoNavigatedToGuessScreen &&
+          _currentIndex == 1) {
+        _hasAutoNavigatedToGuessScreen = true;
+        _currentIndex = 2; // Navigate to the guess screen
+      }
     });
   }
 
@@ -355,7 +366,7 @@ class _GameScreenState extends State<GameScreen> {
     Question(
       questionText:
           'Question 6: As soon as you turn left you should see a room with part of a car in it. What branch of engineering does this driving simulator lab belong to?',
-      correctAnswer: 'Civil engineering',
+      correctAnswer: 'Civil',
     ),
     Question(
       questionText:
@@ -374,8 +385,8 @@ class _GameScreenState extends State<GameScreen> {
     ),
     Question(
       questionText:
-          'Question 10: Where is the office of the G.O.A.T David Shepherd?',
-      correctAnswer: 'Dr. Shepherd\'s office',
+          'Question 10: Where is David Shepherd\'s office? (Hint: look around at Zone 3200)',
+      correctAnswer: '3272W',
     ),
   ];
 
@@ -428,17 +439,7 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.revealedLetters.every((element) => element)) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        final mainNav =
-            context.findAncestorStateOfType<_MainNavigationScreenState>();
-        if (mainNav != null && mainNav._currentIndex != 2) {
-          mainNav.setState(() {
-            mainNav._currentIndex = 2;
-          });
-        }
-      });
-    }
+    // Removed the auto-navigation logic that was causing the bug
 
     return Scaffold(
       backgroundColor: LSUColors.purple,
